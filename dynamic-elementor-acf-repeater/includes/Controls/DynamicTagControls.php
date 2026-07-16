@@ -166,7 +166,7 @@ class DynamicTagControls {
                                 
                 // Always include 'url' type, regardless of the tag
                 if (in_array($type, $all_supported_fields) || $type === 'url') {
-                    if (earluna_fs()->can_use_premium_code__premium_only() || in_array($type, ['text', 'textarea', 'image', 'url'])) {
+                    if (earluna_can_use_premium_code() || in_array($type, ['text', 'textarea', 'image', 'url'])) {
                         $options[$key] = $label . ' | ' . $type;
                     } else {
                         $options[$key . '__pro'] = $label . ' (PRO)' . ' | ' . $type;

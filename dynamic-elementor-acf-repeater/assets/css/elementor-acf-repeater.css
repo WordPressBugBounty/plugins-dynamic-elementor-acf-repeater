@@ -73,25 +73,9 @@ a.ear-upgrade-link {
     left: 1px;
 }
 
-.elementor-lightbox .elementor-swiper-button-prev,
-.elementor-lightbox .elementor-swiper-button-next {
-    z-index: 1; 
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    height: auto;
-}
-
-.elementor-lightbox .elementor-swiper-button-prev {
-    left: 0;
-    
-}
-
-.elementor-lightbox .elementor-swiper-button-next {
-    right: 0;
-}
-
 /* Clamp loop item width to prevent horizontal overflow shifting the template */
 .elementor-loop-container .e-loop-item {
     max-width: 100% !important;
 }
+
+

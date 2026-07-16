@@ -1,10 +1,10 @@
 === Dynamic Elementor ACF Repeater ===
-Contributors: wplunadev
+Contributors: wplunadev, freemius
 Tags: elementor, loop grid, repeater fields, acf repeater, dynamic tags
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.91
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,10 +16,19 @@ This plugin requires the following:
 
 * WordPress 6.0 or higher
 * PHP 7.4 or higher
-* Elementor Pro
-* Advanced Custom Fields Pro (ACF Pro)
+* Elementor 3.8 or higher
+* Elementor Pro 3.8 or higher for Loop Grid/Loop Carousel features
+* Advanced Custom Fields; repeater features require ACF Pro
 
 Please ensure you have these plugins installed and activated before using Dynamic Elementor ACF Repeater.
+
+= Compatibility boundary =
+
+Version 1.1.0 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
+
+Repeater data resolves from the current queried post, Elementor's configured preview post, or the ACF Options page fallback. Archive-term, taxonomy-term, user, and arbitrary explicit-object context resolution are not part of 1.1.0.
+
+The free package boots safely with ACF Free, but ACF Pro is required before repeater fields can be created or rendered. Premium source and premium REST routes are excluded from the free package.
 
 == Description ==
 
@@ -39,8 +48,8 @@ The free version of Dynamic Elementor ACF Repeater provides essential functional
 
 * Basic integration with Elementor Pro and ACF Pro
 * Support for image and text repeater fields in Elementor dynamic tags for loop items and loop grid
-* **Support for adding repeater images to background image in loop item! Game changer!**
-* ACF Repeater Text, ACF Repeater Image dynamic tags
+* Repeater images can be used as Loop Item background images
+* ACF Repeater Text, Image, and Original Post Title dynamic tags
 * Loop Grid widget integration
 * Support for repeater fields on ACF Options page
 
@@ -48,11 +57,11 @@ The free version of Dynamic Elementor ACF Repeater provides essential functional
 
 The Pro version includes everything in the free version, plus a host of advanced features for power users:
 
-* Support for more ACF field types within repeaters (file, gallery, relationship, more coming soon...)
-* Advanced dynamic tags (e.g., ACF Repeater File, ACF Repeater Gallery, ACF Repeater Relationship)
-* Multiple Loop Grids with ACF Repeater fields in the same page, post, or template
+* File, gallery, link, relationship, taxonomy, color, icon, and other supported ACF values
+* ACF Repeater File, Gallery, URL, Color, Icon, Link Title, and Link Target dynamic tags
+* Multiple independently filtered Loop Grids on the same page, post, or template
 * Lightbox functionality on the loop grid widget
-* Swiper integration when loop grid lightbox is enabled
+* Optional previous/next lightbox navigation
 * Advanced filtering capabilities for Loop Grid items with customizable URL parameters
 * Drag-and-drop term ordering for loop filters (set order per widget)
 * Optional deeplinking toggle to update the URL when filtering
@@ -65,7 +74,7 @@ The Pro version includes everything in the free version, plus a host of advanced
 * Lightbox visibility control for individual elements (show or hide individual items in the lightbox vs the grid)
 * ACF Relationship field support for dynamic content associations across posts
 * Nested Relationship/Post Object fields: Support for relationship fields inside repeaters (select via repeater:subfield)
-* NEW - Support for Loop Carousel 
+* Loop Carousel support
 * Element Display Conditions: ACF Repeater Field condition (show/hide by repeater sub‑field)
 * New Dynamic Tags (PRO): ACF Repeater Link Title, ACF Repeater Link Target, ACF Repeater Color, ACF Repeater Icon
 * Enhanced URL support (PRO): ACF Link field now maps to URL/Title/Target
@@ -83,7 +92,7 @@ The Pro version comes with a 3-day free trial. You can cancel anytime before the
 
 = Which ACF field types are supported? =
 
-The plugin supports various field types within repeaters, including text, textarea, image, file, and more. Check the plugin's documentation for a full list of supported field types.
+The free tags support text/textarea, image, URL-compatible values, and original post titles. The premium tags add file/media, gallery, URL/link, color, icon, link title, and link target output. Relationship and taxonomy values are formatted according to their ACF field type; multiple values use deterministic ordering.
 
 = Is there documentation available? =
 
@@ -98,6 +107,25 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 
 == Changelog ==
+
+= 1.1.0 =
+
+* Security
+  - Replaced arbitrary public document rendering with signed, expiring render contexts bound to published content and an owned Loop Grid/Carousel widget.
+  - Blocked anonymous private, draft, password-protected, malformed, and cross-document render requests with controlled REST errors.
+  - Changed editor REST permissions from generic edit_posts checks to edit_post checks for the requested document.
+* Correctness
+  - Removed the site-wide SQL rewrite that stripped post__not_in exclusions from unrelated queries.
+  - Added request-local, collision-safe virtual row IDs and row-level pagination for current-object repeaters.
+  - Fixed empty relationship queries, preserved ACF relationship order, and corrected multi-term OR filtering.
+  - Corrected media, URL, relationship, taxonomy, and multi-value dynamic-tag formatting.
+* Premium
+  - Scoped multiple filters to their owning widget, localized the REST URL, and prevented stale responses from replacing newer results.
+  - Consolidated feature registration behind the active Freemius entitlement and updated Freemius SDK to 2.13.4.
+  - Reworked the lightbox to preserve interactive content and provide buttons, accessible names, focus management, keyboard controls, and reduced-motion support.
+* Compatibility and maintenance
+  - Raised the Elementor/Elementor Pro minimum to 3.8, added Requires Plugins headers, dependency notices, scoped asset loading, uninstall cleanup, and graceful missing-SDK behavior.
+  - Added PHPUnit, WordPress runtime, package-boundary, and Playwright regression suites for free and premium builds.
 
 = 1.0.91 =
 
@@ -204,39 +232,3 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
   - Advanced filtering capabilities for Loop Grid items
   - Lightbox visibility control for individual elements
   - ACF Relationship field support for dynamic content associations across posts
-
-== Upgrade Notice ==
-
-= 1.0.91 =
-FREE and PRO: Fixed overflow visual regression.
-
-= 1.0.9 =
-PRO ONLY: Fixed registration hook for new for new form repeater options.
-
-= 1.0.8 =
-PRO ONLY: New Repeater Field for Elementor Forms - select/radio/checkbox repeater options. Nested repeater relationship sub‑fields.
-
-= 1.0.7 =
-PRO ONLY: Adds ACF Link field support (URL/Title/Target) and new Color/Icon tags; Gallery field fix, minor stability updates
-
-= 1.0.6 =
-PRO ONLY: Drag & drop term ordering, instant no‑reload filter updates, optional deeplinked URL, and new ACF Repeater Display Condition. Fixes repeater number support and default term active state and custom URL param name.
-
-= 1.0.5 = 
-Fixed Lightbox Repeater Visibility Control bug by using toggle buttons instead of dropdown.
-
-= 1.0.4 =
-Fixed filter compatibility with ACF Options pages. Adds default filter terms, visual dividers, term descriptions, and enhanced styling controls.
-
-= 1.0.3 =
-Fixed issue where only first 10 repeater rows were shown. Pro version adds Loop Carousel support.
-
-= 1.0.2 =
-Pro version now supports multiple Loop Grids with ACF Repeater in the same post. Free version fixes bug with accessing repeater fields in Loop Item settings.
-
-= 1.0.1 =
-Fixed taxonomy filtering issues by ensuring repeater fields always use current post data.
-
-
-= 1.0.0 =
-Initial release of Dynamic Elementor ACF Repeater. Enjoy the features and functionality!

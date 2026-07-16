@@ -1,12 +1,21 @@
 <?php
 
+/**
+ * REST route registration, authorization, and rendering.
+ *
+ * @package DynamicElementorAcfRepeater
+ */
 namespace DynamicElementorAcfRepeater\Data;
 
-use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Controls\DynamicTagControls;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
-use WP_REST_Request;
+use DynamicElementorAcfRepeater\MasterMind;
+use DynamicElementorAcfRepeater\Support\RenderContextToken;
 use WP_Error;
+use WP_REST_Request;
+if ( !defined( 'ABSPATH' ) ) {
+    exit;
+}
 class RestHandler {
     private $mastermind;
 
@@ -21,101 +30,93 @@ class RestHandler {
     }
 
     public function register_rest_routes() {
-        register_rest_route( 'elementor-acf-repeater/v1', '/update-dynamic-tag-controls', [
+        register_rest_route( 'elementor-acf-repeater/v1', '/update-dynamic-tag-controls', array(
             'methods'             => 'POST',
-            'callback'            => [$this, 'get_updated_dynamic_tag_controls'],
-            'permission_callback' => [$this, 'permission_callback'],
-            'args'                => [
-                'post_id'           => [
+            'callback'            => array($this, 'get_updated_dynamic_tag_controls'),
+            'permission_callback' => array($this, 'can_edit_requested_post'),
+            'args'                => array(
+                'post_id'           => array(
                     'required'          => true,
-                    'validate_callback' => function ( $param ) {
-                        return is_numeric( $param );
-                    },
-                ],
-                'selected_repeater' => [
+                    'sanitize_callback' => 'absint',
+                ),
+                'selected_repeater' => array(
                     'required'          => true,
-                    'validate_callback' => function ( $param ) {
-                        return is_string( $param ) || is_array( $param );
-                    },
-                ],
-                'tags'              => [
-                    'required'          => true,
-                    'validate_callback' => function ( $param ) {
-                        return is_string( $param ) || is_array( $param );
-                    },
-                ],
-            ],
-        ] );
-        // route for getting saved repeater field
-        register_rest_route( 'elementor-acf-repeater/v1', '/get-saved-repeater-field', [
+                    'sanitize_callback' => 'sanitize_text_field',
+                ),
+                'tags'              => array(
+                    'required' => true,
+                ),
+            ),
+        ) );
+        register_rest_route( 'elementor-acf-repeater/v1', '/get-saved-repeater-field', array(
             'methods'             => 'GET',
-            'callback'            => [$this, 'handle_get_saved_repeater_field_request'],
-            'permission_callback' => [$this, 'permission_callback'],
-            'args'                => [
-                'post_id' => [
+            'callback'            => array($this, 'handle_get_saved_repeater_field_request'),
+            'permission_callback' => array($this, 'can_edit_requested_post'),
+            'args'                => array(
+                'post_id' => array(
                     'required'          => true,
-                    'validate_callback' => function ( $param ) {
-                        return is_numeric( $param );
-                    },
-                ],
-            ],
-        ] );
-        // New route for handling ACF Repeater tag changes
-        register_rest_route( 'elementor-acf-repeater/v1', '/handle-acf-repeater-change', [
-            'methods'             => 'POST',
-            'callback'            => [$this, 'handle_acf_repeater_change'],
-            'permission_callback' => [$this, 'permission_callback'],
-            'args'                => [
-                'post_id'    => [
-                    'required'          => true,
-                    'validate_callback' => function ( $param ) {
-                        return is_numeric( $param );
-                    },
-                ],
-                'element_id' => [
-                    'required'          => false,
-                    'validate_callback' => function ( $param ) {
-                        return is_string( $param ) || is_null( $param );
-                    },
-                ],
-                'is_removed' => [
-                    'required'          => true,
-                    'validate_callback' => function ( $param ) {
-                        return is_bool( $param ) || is_string( $param ) && in_array( strtolower( $param ), [
-                            'true',
-                            'false',
-                            '0',
-                            '1'
-                        ] );
-                    },
-                ],
-            ],
-        ] );
+                    'sanitize_callback' => 'absint',
+                ),
+            ),
+        ) );
+        if ( earluna_can_use_premium_code() ) {
+            register_rest_route( 'elementor-acf-repeater/v1', '/filter-loop-grid', array(
+                'methods'             => 'POST',
+                'callback'            => array($this, 'render_filtered_loop_grid__premium_only'),
+                'permission_callback' => array($this, 'can_render_signed_context__premium_only'),
+                'args'                => array(
+                    'context' => array(
+                        'required' => true,
+                        'type'     => 'string',
+                    ),
+                    'slugs'   => array(
+                        'required' => false,
+                    ),
+                ),
+            ) );
+        }
     }
 
-    public function permission_callback( $request ) {
-        return current_user_can( 'edit_posts' );
+    public function can_edit_requested_post( WP_REST_Request $request ) {
+        $post_id = absint( $request->get_param( 'post_id' ) );
+        if ( !$post_id || !get_post( $post_id ) ) {
+            return new WP_Error('invalid_post_id', __( 'The requested document does not exist.', 'dynamic-elementor-acf-repeater' ), array(
+                'status' => 404,
+            ));
+        }
+        if ( !current_user_can( 'edit_post', $post_id ) ) {
+            return new WP_Error('rest_forbidden', __( 'You cannot edit this document.', 'dynamic-elementor-acf-repeater' ), array(
+                'status' => 403,
+            ));
+        }
+        return true;
     }
 
     public function get_updated_dynamic_tag_controls( $request = null ) {
         try {
-            // Handle both REST and AJAX requests
-            if ( $request instanceof \WP_REST_Request ) {
+            if ( $request instanceof WP_REST_Request ) {
                 $data = $request->get_params();
             } else {
-                // AJAX request
                 check_ajax_referer( 'elementor-editing', 'nonce' );
+                // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Recursively sanitized immediately below because Elementor may send a nested tag array.
+                $posted_tags = ( isset( $_POST['tags'] ) ? wp_unslash( $_POST['tags'] ) : '' );
+                $posted_tags = ( is_array( $posted_tags ) ? map_deep( $posted_tags, 'sanitize_text_field' ) : sanitize_text_field( $posted_tags ) );
                 $data = array(
                     'post_id'           => ( isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0 ),
                     'selected_repeater' => ( isset( $_POST['selected_repeater'] ) ? sanitize_text_field( wp_unslash( $_POST['selected_repeater'] ) ) : '' ),
-                    'tags'              => ( isset( $_POST['tags'] ) ? sanitize_text_field( wp_unslash( $_POST['tags'] ) ) : '' ),
+                    'tags'              => $posted_tags,
                 );
+                if ( !current_user_can( 'edit_post', $data['post_id'] ) ) {
+                    return new WP_Error('rest_forbidden', __( 'You cannot edit this document.', 'dynamic-elementor-acf-repeater' ), array(
+                        'status' => 403,
+                    ));
+                }
             }
             $post_id = absint( $data['post_id'] );
             $selected_repeater = sanitize_text_field( $data['selected_repeater'] );
-            $tags = json_decode( stripslashes( sanitize_text_field( $data['tags'] ) ), true );
+            $tags = ( is_array( $data['tags'] ) ? $data['tags'] : json_decode( (string) $data['tags'], true ) );
             if ( !$post_id || !$selected_repeater || !is_array( $tags ) ) {
-                return new WP_Error('invalid_data', 'Invalid input data provided', array(
+                return new WP_Error('invalid_data', __( 'Invalid input data provided.', 'dynamic-elementor-acf-repeater' ), array(
                     'status' => 400,
                 ));
             }
@@ -131,56 +132,25 @@ class RestHandler {
                 $tags,
                 $request
             );
-            $response_data = [
+            return array(
                 'tags'              => $updated_tags,
                 'selected_repeater' => $selected_repeater,
-            ];
-            return $response_data;
-        } catch ( Exception $e ) {
-            return new WP_Error('rest_error', $e->getMessage(), array(
+            );
+        } catch ( \Throwable $throwable ) {
+            return new WP_Error('rest_error', $throwable->getMessage(), array(
                 'status' => 500,
             ));
         }
     }
 
-    public function handle_get_saved_repeater_field_request( $request ) {
+    public function handle_get_saved_repeater_field_request( WP_REST_Request $request ) {
         $post_id = absint( $request->get_param( 'post_id' ) );
-        if ( !$post_id ) {
-            return new WP_Error('invalid_post_id', 'Invalid post ID provided', array(
-                'status' => 400,
-            ));
-        }
         $repeater_field = $this->settings->get_saved_repeater_field( $post_id );
-        $field_name = '';
-        if ( $repeater_field ) {
-            $field_obj = get_field_object( sanitize_text_field( $repeater_field ) );
-            $field_name = ( $field_obj ? sanitize_text_field( $field_obj['label'] ) : '' );
-        }
-        return [
+        $field_object = ( $repeater_field ? get_field_object( $repeater_field ) : null );
+        return array(
             'repeater_field'      => sanitize_text_field( $repeater_field ),
-            'repeater_field_name' => $field_name,
-        ];
-    }
-
-    public function handle_acf_repeater_change( $request ) {
-        $post_id = absint( $request->get_param( 'post_id' ) );
-        $element_id = sanitize_key( $request->get_param( 'element_id' ) );
-        $is_removed = filter_var( $request->get_param( 'is_removed' ), FILTER_VALIDATE_BOOLEAN );
-        if ( !$post_id ) {
-            return new WP_Error('invalid_data', 'Invalid input data provided', array(
-                'status' => 400,
-            ));
-        }
-        $has_acf_repeater_tag = !$is_removed;
-        if ( $element_id ) {
-            $meta_key = sanitize_key( "widget_has_acf_repeater_tag_{$element_id}" );
-            update_post_meta( $post_id, $meta_key, $has_acf_repeater_tag );
-        }
-        return [
-            'success'              => true,
-            'message'              => 'ACF Repeater change handled successfully',
-            'has_acf_repeater_tag' => $has_acf_repeater_tag,
-        ];
+            'repeater_field_name' => ( $field_object && isset( $field_object['label'] ) ? sanitize_text_field( $field_object['label'] ) : '' ),
+        );
     }
 
 }

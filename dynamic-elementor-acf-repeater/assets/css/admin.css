@@ -1,0 +1,28 @@
+.plugins
+    .plugin-update-tr[data-plugin$="/dynamic-elementor-acf-repeater.php"]
+    p.fs-upgrade-notice.fs-slug-dynamic-elementor-acf-repeater {
+    box-sizing: border-box;
+    margin: 8px 12px 12px;
+    padding: 8px 12px;
+    border: 0;
+    border-left: 3px solid #72aee6;
+    background: #f0f6fc;
+    box-shadow: none;
+    color: #1d2327;
+    line-height: 1.5;
+}
+
+.plugins
+    .plugin-update-tr[data-plugin$="/dynamic-elementor-acf-repeater.php"]
+    p.fs-upgrade-notice.fs-slug-dynamic-elementor-acf-repeater strong {
+    color: #135e96;
+}
+
+@media screen and (max-width: 782px) {
+    .plugins
+        .plugin-update-tr[data-plugin$="/dynamic-elementor-acf-repeater.php"]
+        p.fs-upgrade-notice.fs-slug-dynamic-elementor-acf-repeater {
+        margin-right: 8px;
+        margin-left: 8px;
+    }
+}

@@ -53,13 +53,7 @@
         },
 
         sendTagRemovalToServer() {
-            const currentElement = this.currentElementContext;
-            const data = {
-                post_id: elementor.config.document.id,
-                element_id: currentElement?.id || null,
-                is_removed: true
-            };
-            this.sendAjaxRequest(data);
+            this.updateLightboxVisibilityControl({ has_acf_repeater_tag: false });
         },
 
         debouncedQueueTagChange(id, name, tagSettings) {
@@ -119,31 +113,7 @@
         },
 
         sendTagChangeToServer(id, name, tagSettings) {
-            const currentElement = this.currentElementContext;
-            const data = {
-                tag_id: id,
-                tag_name: name,
-                settings: tagSettings ? JSON.stringify(tagSettings) : null,
-                post_id: elementor.config.document.id,
-                element_id: currentElement?.id || '',
-                is_removed: false
-            };
-            this.sendAjaxRequest(data);
-        },
-
-        sendAjaxRequest(data) {
-            $.ajax({
-                url: `${wpApiSettings.root}elementor-acf-repeater/v1/handle-acf-repeater-change`,
-                method: 'POST',
-                beforeSend: (xhr) => xhr.setRequestHeader('X-WP-Nonce', wpApiSettings.nonce),
-                data,
-                success: (response) => {
-                    this.updateLightboxVisibilityControl(response);
-                },
-                error: () => {
-                    this.updateLightboxVisibilityControl({ success: false, has_acf_repeater_tag: false });
-                }
-            });
+            this.updateLightboxVisibilityControl({ has_acf_repeater_tag: true });
         },
         
         updateLightboxVisibilityControl(response) {

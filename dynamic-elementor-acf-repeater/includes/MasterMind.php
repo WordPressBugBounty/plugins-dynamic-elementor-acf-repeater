@@ -30,8 +30,6 @@ class MasterMind {
 
     private $rest;
 
-    const VIRTUAL_POST_ID_SEPARATOR = 999999;
-
     private function __construct() {
     }
 
@@ -62,7 +60,7 @@ class MasterMind {
             2
         );
         $this->rest = new RestHandler();
-        add_action( 'rest_api_init', [$this->rest, 'register_rest_routes'] );
+        add_action( 'rest_api_init', array($this->rest, 'register_rest_routes') );
         do_action( 'dynamic_elementor_acf_repeater_initialized' );
         self::$is_initialized = true;
     }
@@ -72,9 +70,28 @@ class MasterMind {
     }
 
     private function load_elementor_dependencies() {
+        require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Support/RenderContextToken.php';
+        require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Support/VirtualRowContext.php';
+        require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Support/DynamicValueFormatter.php';
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/DynamicTagControls.php';
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/EarSwitcherControl.php';
-        require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/LoopGridControlsBase.php';
+        if ( earluna_can_use_premium_code() ) {
+            require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/ProControls/LoopGridControlsBasePro.php';
+            require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/ProControls/LoopGridLightboxControls.php';
+            require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/LoopGrid/ProFeatures/LoopGridFilter.php';
+            // Register the premium Display Condition through Elementor's public hook.
+            $editor_reg = DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Conditions/EditorRegistration.php';
+            if ( file_exists( $editor_reg ) ) {
+                require_once $editor_reg;
+            }
+            // Load ACF Repeater Form Field
+            $form_field_path = DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/DynamicRepeaterTags/AcfRepeaterTags/EarProTags/AcfRepeaterFormOptions.php';
+            if ( file_exists( $form_field_path ) ) {
+                require_once $form_field_path;
+            }
+        } else {
+            require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/LoopGridControlsBase.php';
+        }
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/LightboxRepeaterVisibilityControl.php';
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/RepeaterFieldSelector.php';
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/LoopGrid/LoopGridProvider.php';
@@ -130,18 +147,22 @@ class MasterMind {
         $this->register_repeater_provider_hooks();
         add_filter(
             'elementor/query/query_args',
-            [$this->repeater_provider, 'filter_elementor_query_args'],
+            array($this->repeater_provider, 'filter_elementor_query_args'),
             10,
             2
         );
-        add_action( 'elementor/dynamic_tags/before_render', [$this, 'refresh_dynamic_tag_controls'] );
+        add_action( 'elementor/dynamic_tags/before_render', array($this, 'refresh_dynamic_tag_controls') );
+        // Register Form Fields through Elementor Pro's public registrar hook.
+        if ( earluna_can_use_premium_code() ) {
+            add_action( 'elementor_pro/forms/fields/register', array($this, 'register_form_fields__premium_only') );
+        }
     }
 
     private function register_dynamic_tags_hooks() {
-        add_action( 'elementor/editor/before_enqueue_scripts', [$this->get_dynamic_tags(), 'load_tag_classes'] );
-        add_action( 'wp_ajax_elementor_ajax', [$this, 'load_tag_classes_before_ajax'], 5 );
+        add_action( 'elementor/editor/before_enqueue_scripts', array($this->get_dynamic_tags(), 'load_tag_classes') );
+        add_action( 'wp_ajax_elementor_ajax', array($this, 'load_tag_classes_before_ajax'), 5 );
         if ( !$this->is_in_widgets_context() ) {
-            add_action( 'elementor/dynamic_tags/register', [DynamicTagControls::instance(), 'register_tags'] );
+            add_action( 'elementor/dynamic_tags/register', array(DynamicTagControls::instance(), 'register_tags') );
         }
     }
 
@@ -177,15 +198,15 @@ class MasterMind {
 
     /**
      * Updates the dynamic tag controls based on the current state and user selections.
-     * 
+     *
      * This method is called in response to AJAX requests or other dynamic events in the Elementor editor.
      * It provides updated control options for ACF Repeater dynamic tags, particularly when the user
      * changes the selected repeater field or when other relevant changes occur.
-     * 
+     *
      * Note: This method works in conjunction with DynamicTagControls::register_controls().
      * While register_controls() sets up the initial structure, this method provides
      * the updated data to populate that structure based on the current state.
-     * 
+     *
      * @param int $post_id The ID of the post being edited.
      * @param string $selected_repeater The currently selected repeater field.
      * @param array $tags An array of tag configurations to update.
@@ -204,26 +225,26 @@ class MasterMind {
             $settings = new RepeaterFieldSelector();
             $selected_repeater = $settings->get_saved_repeater_field( $post_id );
         }
-        $updated_tags = [];
+        $updated_tags = array();
         $controls = DynamicTagControls::instance();
         foreach ( $tags as $tag_name => $tag_config ) {
             $tag_class = $this->get_tag_class_from_name( $tag_name );
             if ( $tag_class ) {
                 $tag_instance = new $tag_class();
                 $supported_fields = $tag_instance->get_supported_fields();
-                $updated_tags[$tag_name] = [
-                    'controls' => [
-                        'repeater_field' => [
+                $updated_tags[$tag_name] = array(
+                    'controls' => array(
+                        'repeater_field' => array(
                             'type'    => \Elementor\Controls_Manager::SELECT,
                             'label'   => __( 'Repeater Field', 'dynamic-elementor-acf-repeater' ),
                             'default' => $selected_repeater,
                             'groups'  => $controls->get_control_options( $supported_fields, $selected_repeater, $tag_instance ),
-                            'global'  => [
+                            'global'  => array(
                                 'active' => false,
-                            ],
-                        ],
-                    ],
-                ];
+                            ),
+                        ),
+                    ),
+                );
             }
         }
         return $updated_tags;
@@ -231,8 +252,8 @@ class MasterMind {
 
     private function get_tag_class_from_name( $tag_name ) {
         $tag_classes = RepeaterTagManager::get_tag_classes_names();
-        $class_map = array_combine( array_map( function ( $class ) {
-            return 'acf-repeater-' . strtolower( str_replace( 'AcfRepeater', '', $class ) );
+        $class_map = array_combine( array_map( function ( $class_name ) {
+            return 'acf-repeater-' . strtolower( str_replace( 'AcfRepeater', '', $class_name ) );
         }, $tag_classes ), $tag_classes );
         return ( isset( $class_map[$tag_name] ) ? 'DynamicElementorAcfRepeater\\DynamicTags\\' . $class_map[$tag_name] : null );
     }
