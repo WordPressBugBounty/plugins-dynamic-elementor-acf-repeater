@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Dynamic Elementor ACF Repeater
  * Description: Allows ACF repeater field values to be used in Elementor Loop Grids via Dynamic Tags.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author:      WP Luna
  * Author URI:  https://wpluna.com
  * License:     GPL-2.0+
@@ -25,7 +25,7 @@ use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Controls\LightboxRepeaterVisibilityControl;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
 use DynamicElementorAcfRepeater\AdminSettingsNotices;
-define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '1.1.0' );
+define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '1.2.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_PRO_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_PHP_VERSION', '7.4' );
@@ -250,6 +250,8 @@ class Dynamic_Elementor_ACF_Repeater {
             $this->bootstrapped = true;
             add_action( 'wp_enqueue_scripts', array($this, 'register_assets'), 5 );
             add_action( 'elementor/editor/before_enqueue_scripts', array($this, 'enqueue_editor_assets') );
+            add_action( 'elementor/preview/enqueue_styles', array($this, 'enqueue_preview_styles') );
+            add_action( 'elementor/preview/enqueue_scripts', array($this, 'enqueue_preview_assets') );
             add_action( 'elementor/controls/register', array($this, 'init_controls') );
             if ( did_action( 'elementor_pro/init' ) ) {
                 $this->init_elementor_dependent_features();
@@ -278,21 +280,21 @@ class Dynamic_Elementor_ACF_Repeater {
             wp_register_script(
                 'ear-filter-updater',
                 plugins_url( 'assets/js/pro/filter-updater.js', __FILE__ ),
-                array('jquery', 'elementor-frontend'),
+                array('jquery'),
                 DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION,
                 true
             );
             wp_register_script(
                 'ear-lightbox-provider',
                 plugins_url( 'assets/js/pro/lightbox/lightbox-provider.js', __FILE__ ),
-                array('jquery', 'elementor-frontend'),
+                array('jquery'),
                 DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION,
                 true
             );
             wp_register_script(
                 'ear-virtual-lightbox',
                 plugins_url( 'assets/js/pro/lightbox/virtual-lightbox.js', __FILE__ ),
-                array('jquery', 'elementor-frontend', 'ear-lightbox-provider'),
+                array('jquery', 'ear-lightbox-provider'),
                 DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION,
                 true
             );
@@ -319,12 +321,36 @@ class Dynamic_Elementor_ACF_Repeater {
         $this->enqueue_editor_scripts();
     }
 
+    /**
+     * Load interactive widget assets inside Elementor's preview iframe.
+     *
+     * Editor widget renders can arrive over AJAX after the iframe has printed its
+     * footer scripts. Enqueuing from render_content is therefore too late for the
+     * editor even though it remains sufficient on normal frontend requests.
+     */
+    public function enqueue_preview_assets() {
+        if ( !earluna_can_use_premium_code() ) {
+            return;
+        }
+        $this->enqueue_lightbox_assets();
+        $this->enqueue_filter_assets();
+    }
+
+    /**
+     * Style editor-only diagnostics in both Free and Pro preview iframes.
+     */
+    public function enqueue_preview_styles() {
+        $this->register_assets();
+        wp_enqueue_style( 'dynamic-elementor-acf-repeater' );
+    }
+
     public function enqueue_filter_assets() {
         $this->register_assets();
         wp_enqueue_style( 'dynamic-elementor-acf-repeater' );
         wp_enqueue_script( 'ear-filter-updater' );
         wp_localize_script( 'ear-filter-updater', 'earFilterConfig', array(
             'restUrl'       => esc_url_raw( rest_url( 'elementor-acf-repeater/v1/filter-loop-grid' ) ),
+            'restNonce'     => ( is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '' ),
             'requestFailed' => __( 'The filter could not be updated. Please try again.', 'dynamic-elementor-acf-repeater' ),
         ) );
     }

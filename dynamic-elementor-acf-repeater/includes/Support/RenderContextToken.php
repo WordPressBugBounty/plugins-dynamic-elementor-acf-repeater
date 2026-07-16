@@ -73,11 +73,20 @@ final class RenderContextToken {
 	 * @return array<string, int|string>
 	 */
 	private static function normalize_context( array $context ) {
+		$acf_context_id = isset( $context['acf_context_id'] ) ? strtolower( trim( (string) $context['acf_context_id'] ) ) : '';
+		if ( ! preg_match( '/^(?:[1-9][0-9]*|options|[a-z][a-z0-9_-]*_[1-9][0-9]*)$/', $acf_context_id ) ) {
+			$acf_context_id = '';
+		}
+
 		return array(
-			'post_id'    => isset( $context['post_id'] ) ? absint( $context['post_id'] ) : 0,
-			'doc_id'     => isset( $context['doc_id'] ) ? absint( $context['doc_id'] ) : 0,
-			'widget_id'  => isset( $context['widget_id'] ) ? sanitize_key( $context['widget_id'] ) : '',
-			'param_name' => isset( $context['param_name'] ) ? sanitize_key( $context['param_name'] ) : '',
+			'post_id'               => isset( $context['post_id'] ) ? absint( $context['post_id'] ) : 0,
+			'doc_id'                => isset( $context['doc_id'] ) ? absint( $context['doc_id'] ) : 0,
+			'widget_id'             => isset( $context['widget_id'] ) ? sanitize_key( $context['widget_id'] ) : '',
+			'param_name'            => isset( $context['param_name'] ) ? sanitize_key( $context['param_name'] ) : '',
+			'acf_context_type'      => isset( $context['acf_context_type'] ) ? sanitize_key( $context['acf_context_type'] ) : '',
+			'acf_context_id'        => $acf_context_id,
+			'acf_context_object_id' => isset( $context['acf_context_object_id'] ) ? absint( $context['acf_context_object_id'] ) : 0,
+			'acf_context_label'     => isset( $context['acf_context_label'] ) ? sanitize_text_field( $context['acf_context_label'] ) : '',
 		);
 	}
 
@@ -89,9 +98,16 @@ final class RenderContextToken {
 	 * @param array<string, mixed> $context Normalized render context.
 	 */
 	private static function is_public_context( array $context ) {
+		if ( isset( $context['acf_context_type'] ) && 'user' === $context['acf_context_type'] ) {
+			return false;
+		}
+
 		$post_id = isset( $context['post_id'] ) ? absint( $context['post_id'] ) : 0;
 		$doc_id  = isset( $context['doc_id'] ) ? absint( $context['doc_id'] ) : 0;
 		$doc_id  = $doc_id ? $doc_id : $post_id;
+		if ( $post_id === $doc_id && self::is_public_archive_document( $doc_id ) ) {
+			return true;
+		}
 
 		foreach ( array_unique( array( $post_id, $doc_id ) ) as $object_id ) {
 			$post = $object_id ? get_post( $object_id ) : null;
@@ -101,6 +117,16 @@ final class RenderContextToken {
 		}
 
 		return true;
+	}
+
+	private static function is_public_archive_document( $post_id ) {
+		$post = $post_id ? get_post( $post_id ) : null;
+		if ( ! $post || ! isset( $post->post_type ) || 'elementor_library' !== $post->post_type || 'publish' !== get_post_status( $post ) || ! empty( $post->post_password ) || ! class_exists( '\\Elementor\\Plugin' ) ) {
+			return false;
+		}
+
+		$document = \Elementor\Plugin::$instance->documents->get( $post_id );
+		return $document && method_exists( $document, 'get_location' ) && 'archive' === $document->get_location();
 	}
 
 	private static function base64url_encode( $value ) {

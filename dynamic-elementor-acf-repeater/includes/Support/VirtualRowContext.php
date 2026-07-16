@@ -22,10 +22,11 @@ final class VirtualRowContext {
 	private static $next_id  = -1;
 	private static $contexts = array();
 
-	public static function register( $source_id, $row_index, $repeater_field ) {
+	public static function register( $source_id, $row_index, $repeater_field, $source_label = '' ) {
 		$virtual_id                    = self::$next_id--;
 		self::$contexts[ $virtual_id ] = array(
-			'source_id'      => 'options' === $source_id ? 'options' : absint( $source_id ),
+			'source_id'      => self::normalize_source_id( $source_id ),
+			'source_label'   => (string) $source_label,
 			'row_index'      => absint( $row_index ),
 			'repeater_field' => sanitize_key( $repeater_field ),
 		);
@@ -47,12 +48,26 @@ final class VirtualRowContext {
 		if ( is_object( $post ) && isset( $post->acf_repeater_source_id, $post->earluna_loop_index ) ) {
 			return array(
 				'source_id'      => $post->acf_repeater_source_id,
+				'source_label'   => isset( $post->acf_repeater_source_label ) ? (string) $post->acf_repeater_source_label : '',
 				'row_index'      => absint( $post->earluna_loop_index ),
 				'repeater_field' => isset( $post->acf_repeater_field ) ? sanitize_key( $post->acf_repeater_field ) : '',
 			);
 		}
 
 		return is_object( $post ) && isset( $post->ID ) ? self::get( $post->ID ) : null;
+	}
+
+	private static function normalize_source_id( $source_id ) {
+		if ( is_numeric( $source_id ) ) {
+			return absint( $source_id );
+		}
+
+		$source_id = sanitize_key( $source_id );
+		if ( 'option' === $source_id || 'options' === $source_id ) {
+			return 'options';
+		}
+
+		return preg_match( '/^[a-z][a-z0-9_-]*_[1-9][0-9]*$/', $source_id ) ? $source_id : '';
 	}
 
 	public static function reset() {

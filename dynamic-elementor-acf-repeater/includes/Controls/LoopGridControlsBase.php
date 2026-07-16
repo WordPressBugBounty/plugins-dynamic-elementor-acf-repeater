@@ -15,10 +15,12 @@ use DynamicElementorAcfRepeater\Controls\EarSwitcherControl;
 class LoopGridControlsBase {
     protected $mastermind;
     protected $provider;
+    protected $context_controls;
 
     public function __construct($mastermind, $provider) {
         $this->mastermind = $mastermind;
         $this->provider = $provider;
+        $this->context_controls = new ContextControls();
         $this->register_earluna_switcher_control();
     }
 
@@ -85,6 +87,8 @@ class LoopGridControlsBase {
                 ]
             );
         }
+
+        $this->context_controls->register($element, false);
         
         $element->add_control(
             'query_current_post_only',

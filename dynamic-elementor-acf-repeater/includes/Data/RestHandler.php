@@ -10,6 +10,7 @@ namespace DynamicElementorAcfRepeater\Data;
 use DynamicElementorAcfRepeater\Controls\DynamicTagControls;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
 use DynamicElementorAcfRepeater\MasterMind;
+use DynamicElementorAcfRepeater\Support\ContextResolver;
 use DynamicElementorAcfRepeater\Support\RenderContextToken;
 use WP_Error;
 use WP_REST_Request;

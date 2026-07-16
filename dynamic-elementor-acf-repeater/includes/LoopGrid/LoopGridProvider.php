@@ -4,12 +4,14 @@ namespace DynamicElementorAcfRepeater\LoopGrid;
 
 use DynamicElementorAcfRepeater\Controls\LoopGridControlsBase;
 use DynamicElementorAcfRepeater\MasterMind;
+use DynamicElementorAcfRepeater\Support\ContextResolver;
 use DynamicElementorAcfRepeater\Support\VirtualRowContext;
 
 class LoopGridProvider {
 	protected static $instance = null;
 	protected $mastermind;
 	protected $controls;
+	protected $context_resolver;
 
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -24,12 +26,14 @@ class LoopGridProvider {
 	}
 
 	protected function __construct() {
-		$this->mastermind = \DynamicElementorAcfRepeater\MasterMind::instance();
+		$this->mastermind       = \DynamicElementorAcfRepeater\MasterMind::instance();
+		$this->context_resolver = new ContextResolver();
 		$this->init_controls();
 		$this->register_controls();
 
 		// Add filter for virtual post classes
 		add_filter( 'post_class', array( $this, 'add_virtual_post_classes' ), 10, 3 );
+		add_filter( 'elementor/widget/render_content', array( $this, 'inject_context_diagnostics' ), 9, 2 );
 	}
 
 	protected function init_controls() {
@@ -56,6 +60,27 @@ class LoopGridProvider {
 			return $posts;
 		}
 
+		if ( $query->get( 'earluna_context_direct' ) ) {
+			$source_id     = $query->get( 'earluna_context_id' );
+			$source_label  = $query->get( 'earluna_context_label' );
+			$requested     = $query->get( 'earluna_context_requested' );
+			$repeater_data = $source_id ? get_field( $repeater_field, $source_id ) : null;
+
+			if ( ( ! is_array( $repeater_data ) || empty( $repeater_data ) ) && 'auto' === $requested && 'options' !== $source_id ) {
+				$source_id     = 'options';
+				$source_label  = __( 'Options page (automatic fallback)', 'dynamic-elementor-acf-repeater' );
+				$repeater_data = get_field( $repeater_field, $source_id );
+			}
+
+			if ( ! is_array( $repeater_data ) || empty( $repeater_data ) ) {
+				return array();
+			}
+
+			$source_post   = is_numeric( $source_id ) ? get_post( $source_id ) : null;
+			$virtual_posts = $this->create_virtual_posts( $repeater_data, $source_id, $source_label, $repeater_field, $source_post );
+			return $this->prepare_virtual_posts_for_output( $virtual_posts, $query );
+		}
+
 		$virtual_posts = array();
 
 		// If no posts provided, create a dummy post for options page data
@@ -63,25 +88,7 @@ class LoopGridProvider {
 			$repeater_data = get_field( $repeater_field, 'options' );
 
 			if ( $repeater_data && is_array( $repeater_data ) ) {
-
-				// Create virtual posts from options page data
-				foreach ( $repeater_data as $index => $row ) {
-					$virtual_post              = new \stdClass();
-					$virtual_post->ID          = VirtualRowContext::register( 'options', $index, $repeater_field );
-					$virtual_post->post_parent = 0;
-					$virtual_post->post_title  = 'Options - ' . $repeater_field . ' ' . ( $index + 1 );
-					$virtual_post->post_status = 'publish';
-					$virtual_post->post_type   = 'options';
-					$virtual_post->filter      = 'raw';
-
-					// Add our custom data
-					$virtual_post->acf_repeater_data      = $row;
-					$virtual_post->acf_repeater_source_id = 'options';
-					$virtual_post->acf_repeater_field     = $repeater_field;
-					$virtual_post->earluna_loop_index     = $index;
-
-					$virtual_posts[] = $virtual_post;
-				}
+				$virtual_posts = $this->create_virtual_posts( $repeater_data, 'options', __( 'Options page', 'dynamic-elementor-acf-repeater' ), $repeater_field );
 
 				return $this->prepare_virtual_posts_for_output( $virtual_posts, $query );
 			}
@@ -99,26 +106,48 @@ class LoopGridProvider {
 				}
 			}
 
-			foreach ( $repeater_data as $index => $row ) {
-				$virtual_post              = new \stdClass();
-				$virtual_post->ID          = VirtualRowContext::register( $post->ID, $index, $repeater_field );
-				$virtual_post->post_parent = $post->ID;
-				$virtual_post->post_title  = $post->post_title . ' - ' . $repeater_field . ' ' . ( $index + 1 );
-				$virtual_post->post_status = 'publish';
-				$virtual_post->post_type   = $post->post_type;
-				$virtual_post->filter      = 'raw';
-
-				// Add our custom data
-				$virtual_post->acf_repeater_data      = $row;
-				$virtual_post->acf_repeater_source_id = $post->ID;
-				$virtual_post->acf_repeater_field     = $repeater_field;
-				$virtual_post->earluna_loop_index     = $index;
-
-				$virtual_posts[] = $virtual_post;
-			}
+			$virtual_posts = array_merge(
+				$virtual_posts,
+				$this->create_virtual_posts( $repeater_data, $post->ID, $post->post_title, $repeater_field, $post )
+			);
 		}
 
 		return $this->prepare_virtual_posts_for_output( $virtual_posts, $query );
+	}
+
+	/**
+	 * Expand one ACF object into request-local virtual posts.
+	 *
+	 * @param array<int, mixed> $repeater_data Repeater rows.
+	 * @param int|string        $source_id     ACF-compatible object ID.
+	 * @param string            $source_label  Human-readable source label.
+	 * @param string            $repeater_field Repeater field name or key.
+	 * @param object|null       $source_post   Source post when the context is singular.
+	 * @return array<int, object>
+	 */
+	private function create_virtual_posts( $repeater_data, $source_id, $source_label, $repeater_field, $source_post = null ) {
+		$virtual_posts = array();
+		$source_label  = $source_label ? $source_label : (string) $source_id;
+
+		foreach ( $repeater_data as $index => $row ) {
+			$virtual_post              = new \stdClass();
+			$virtual_post->ID          = VirtualRowContext::register( $source_id, $index, $repeater_field, $source_label );
+			$virtual_post->post_parent = is_numeric( $source_id ) ? absint( $source_id ) : 0;
+			$virtual_post->post_title  = $source_label . ' - ' . $repeater_field . ' ' . ( $index + 1 );
+			$virtual_post->post_status = 'publish';
+			$virtual_post->post_type   = $source_post && isset( $source_post->post_type ) ? $source_post->post_type : 'earluna-repeater-row';
+			$virtual_post->filter      = 'raw';
+
+			$virtual_post->acf_repeater_data         = $row;
+			$virtual_post->acf_repeater_source_id    = $source_id;
+			$virtual_post->acf_repeater_source_label = $source_label;
+			$virtual_post->acf_repeater_field        = $repeater_field;
+			$virtual_post->earluna_loop_index        = $index;
+
+			$virtual_posts[] = $virtual_post;
+		}
+
+		return $virtual_posts;
 	}
 
 	/**
@@ -163,30 +192,36 @@ class LoopGridProvider {
 		$settings = $widget->get_settings();
 
 		if ( isset( $settings['use_acf_repeater'] ) && $settings['use_acf_repeater'] === 'yes' ) {
+			$current_only = isset( $settings['query_current_post_only'] ) ? $settings['query_current_post_only'] : 'yes';
+			$requested    = isset( $settings[ ContextResolver::SETTING_TYPE ] ) ? sanitize_key( $settings[ ContextResolver::SETTING_TYPE ] ) : 'auto';
+			$context      = $this->get_context_resolver()->resolve( $settings );
+			$direct       = 'yes' === $current_only || 'auto' !== $requested;
 
-			// Add our virtual posts flags
-			$query_args['earluna_virtual_posts'] = 1;
-			$query_args['acf_repeater_field']    = $settings['acf_repeater_field'];
-			$current_only                        = isset( $settings['query_current_post_only'] ) ? $settings['query_current_post_only'] : 'yes';
+			$query_args['earluna_virtual_posts']     = 1;
+			$query_args['acf_repeater_field']        = isset( $settings['acf_repeater_field'] ) ? $settings['acf_repeater_field'] : '';
+			$query_args['query_current_post_only']   = $current_only;
+			$query_args['earluna_context_requested'] = $requested;
+			$query_args['earluna_context_id']        = $context['acf_object_id'];
+			$query_args['earluna_context_label']     = $context['label'];
+			$query_args['earluna_context_direct']    = $direct ? 1 : 0;
 
-			// Store in query vars so other filters can read it later.
-			$query_args['query_current_post_only'] = $current_only;
+			if ( $direct ) {
+				$source_post_id = 'post' === $context['type'] ? absint( $context['object_id'] ) : 0;
 
-			// Only modify query if we want current post
-			$current_id = get_the_ID();
-			if ( ! empty( $query_args['post__not_in'] ) && is_array( $query_args['post__not_in'] ) ) {
+				if ( $source_post_id && ! empty( $query_args['post__not_in'] ) && is_array( $query_args['post__not_in'] ) ) {
 					// Elementor excludes the current post by default in some Loop contexts.
-					// Remove only that one exclusion, and only for this plugin-owned query.
+					// Remove only the resolved source, and only for this plugin-owned query.
 					// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- Existing Elementor exclusions are preserved except for the required source object.
-					$query_args['post__not_in'] = array_values( array_diff( array_map( 'absint', $query_args['post__not_in'] ), array( $current_id ) ) );
-			}
+					$query_args['post__not_in'] = array_values( array_diff( array_map( 'absint', $query_args['post__not_in'] ), array( $source_post_id ) ) );
+				}
 
-			if ( $current_only === 'yes' ) {
-				$query_args['post__in'] = array( $current_id );
+				// Non-post ACF objects intentionally return no source posts. The
+				// the_posts filter expands their repeater directly from the context ID.
+				$query_args['post__in'] = array( $source_post_id ? $source_post_id : 0 );
 
 				// WordPress paginates source posts before the_posts runs. Preserve
-				// Elementor's requested row page, then always fetch the one source
-				// object so virtual rows can be paginated after expansion.
+				// Elementor's requested row page, then fetch at most one source post so
+				// virtual rows can be paginated after expansion.
 				$query_args['earluna_rows_per_page'] = isset( $query_args['posts_per_page'] ) ? absint( $query_args['posts_per_page'] ) : 0;
 				$query_args['earluna_rows_page']     = isset( $query_args['paged'] ) ? max( 1, absint( $query_args['paged'] ) ) : 1;
 				$query_args['earluna_rows_offset']   = isset( $query_args['offset'] ) ? absint( $query_args['offset'] ) : 0;
@@ -198,6 +233,107 @@ class LoopGridProvider {
 		}
 
 		return $query_args;
+	}
+
+	private function get_context_resolver() {
+		if ( ! $this->context_resolver ) {
+			$this->context_resolver = new ContextResolver();
+		}
+
+		return $this->context_resolver;
+	}
+
+	/**
+	 * Return the normalized editor diagnostic for one Loop widget.
+	 *
+	 * @param array<string, mixed> $settings Elementor widget settings.
+	 * @return array<string, int|string>
+	 */
+	public function get_context_diagnostics( $settings ) {
+		$field        = isset( $settings['acf_repeater_field'] ) ? $settings['acf_repeater_field'] : '';
+		$current_only = isset( $settings['query_current_post_only'] ) ? $settings['query_current_post_only'] : 'yes';
+		$requested    = isset( $settings[ ContextResolver::SETTING_TYPE ] ) ? sanitize_key( $settings[ ContextResolver::SETTING_TYPE ] ) : 'auto';
+
+		if ( 'auto' === $requested && 'yes' !== $current_only ) {
+			$post_type = isset( $settings['post_query_post_type'] ) ? sanitize_key( $settings['post_query_post_type'] ) : 'post';
+			return array(
+				'requested'     => 'auto',
+				'type'          => 'query',
+				'acf_object_id' => 'query:' . $post_type,
+				'object_id'     => 0,
+				'label'         => __( 'All queried objects', 'dynamic-elementor-acf-repeater' ) . ' (' . $post_type . ')',
+				'reason'        => __( 'Rows are aggregated from the widget query instead of one ACF object.', 'dynamic-elementor-acf-repeater' ),
+				'field'         => (string) $field,
+				'row_count'     => 0,
+				'status'        => $field ? 'aggregate' : 'missing_field',
+			);
+		}
+
+		return $this->get_context_resolver()->diagnose( $field, $settings );
+	}
+
+	/**
+	 * Add a compact live resolver report above Loop widgets in Elementor preview.
+	 */
+	public function inject_context_diagnostics( $content, $widget ) {
+		if ( ! $this->is_elementor_editor_preview() || ! in_array( $widget->get_name(), array( 'loop-grid', 'loop-carousel' ), true ) ) {
+			return $content;
+		}
+
+		$settings = $widget->get_settings_for_display();
+		if ( ! isset( $settings['use_acf_repeater'] ) || 'yes' !== $settings['use_acf_repeater'] ) {
+			return $content;
+		}
+
+		$diagnostic = $this->get_context_diagnostics( $settings );
+		$status     = isset( $diagnostic['status'] ) ? sanitize_key( $diagnostic['status'] ) : 'missing_context';
+		if ( 'aggregate' === $status ) {
+			$diagnostic['row_count'] = $this->count_rendered_loop_items( $content );
+		}
+		$status_text = in_array( $status, array( 'ready', 'aggregate' ), true )
+			/* translators: %d: Number of resolved repeater rows. */
+			? sprintf( __( '%d rows resolved', 'dynamic-elementor-acf-repeater' ), absint( $diagnostic['row_count'] ) )
+			: ( 'empty' === $status ? __( 'No rows found', 'dynamic-elementor-acf-repeater' ) : __( 'Context incomplete', 'dynamic-elementor-acf-repeater' ) );
+
+		$notice  = '<details class="ear-context-diagnostic ear-context-diagnostic--' . esc_attr( $status ) . '">';
+		$notice .= '<summary aria-label="' . esc_attr__( 'Show ACF repeater context diagnostic', 'dynamic-elementor-acf-repeater' ) . '"><span class="ear-context-diagnostic__status">' . esc_html( $status_text ) . '</span></summary>';
+		$notice .= '<div class="ear-context-diagnostic__details">';
+		$notice .= '<span><strong>' . esc_html__( 'Source:', 'dynamic-elementor-acf-repeater' ) . '</strong> ' . esc_html( $diagnostic['label'] ) . ' <code>' . esc_html( (string) $diagnostic['acf_object_id'] ) . '</code></span>';
+		$notice .= '<span><strong>' . esc_html__( 'Field:', 'dynamic-elementor-acf-repeater' ) . '</strong> <code>' . esc_html( (string) $diagnostic['field'] ) . '</code></span>';
+		if ( 'ready' !== $status && ! empty( $diagnostic['reason'] ) ) {
+			$notice .= '<span class="ear-context-diagnostic__reason">' . esc_html( $diagnostic['reason'] ) . '</span>';
+		}
+		$notice .= '</div></details>';
+
+		return $notice . $content;
+	}
+
+	private function count_rendered_loop_items( $content ) {
+		if ( class_exists( '\\WP_HTML_Tag_Processor' ) ) {
+			$processor = new \WP_HTML_Tag_Processor( $content );
+			$count     = 0;
+			while ( $processor->next_tag( array( 'class_name' => 'e-loop-item' ) ) ) {
+				++$count;
+			}
+			return $count;
+		}
+
+		return preg_match_all( '/class=(?:"[^"]*\\be-loop-item\\b[^"]*"|\'[^\']*\\be-loop-item\\b[^\']*\')/i', $content, $matches );
+	}
+
+	private function is_elementor_editor_preview() {
+		if ( ! class_exists( '\\Elementor\\Plugin' ) ) {
+			return false;
+		}
+
+		try {
+			$elementor  = \Elementor\Plugin::instance();
+			$is_editor  = isset( $elementor->editor ) && method_exists( $elementor->editor, 'is_edit_mode' ) && $elementor->editor->is_edit_mode();
+			$is_preview = isset( $elementor->preview ) && method_exists( $elementor->preview, 'is_preview_mode' ) && $elementor->preview->is_preview_mode();
+			return $is_editor || $is_preview;
+		} catch ( \Throwable $throwable ) {
+			return false;
+		}
 	}
 
 	public function get_acf_repeater_fields() {
@@ -232,7 +368,10 @@ class LoopGridProvider {
 	public function get_original_post_title( $post_id ) {
 		if ( $post_id < 0 ) {
 			$context = VirtualRowContext::get( $post_id );
-			$post    = $context && 'options' !== $context['source_id'] ? get_post( $context['source_id'] ) : null;
+			if ( $context && ! is_numeric( $context['source_id'] ) ) {
+				return isset( $context['source_label'] ) ? (string) $context['source_label'] : '';
+			}
+			$post = $context ? get_post( $context['source_id'] ) : null;
 		} else {
 			$post = get_post( $post_id );
 		}
