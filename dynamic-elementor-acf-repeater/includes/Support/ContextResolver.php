@@ -105,62 +105,6 @@ final class ContextResolver {
 	}
 
 	/**
-	 * Return the selected field's live editor diagnostic state.
-	 *
-	 * @param string               $repeater_field Repeater field name or key.
-	 * @param array<string, mixed> $settings       Elementor widget settings.
-	 * @return array<string, int|string>
-	 */
-	public function diagnose( $repeater_field, $settings = array() ) {
-		$context = $this->resolve( $settings );
-		$result  = array_merge(
-			$context,
-			array(
-				'field'     => (string) $repeater_field,
-				'row_count' => 0,
-				'status'    => 'missing_context',
-			)
-		);
-
-		if ( ! $repeater_field ) {
-			$result['status'] = 'missing_field';
-			$result['reason'] = __( 'Select an ACF repeater field.', 'dynamic-elementor-acf-repeater' );
-			return $result;
-		}
-
-		if ( 'none' === $context['type'] || ! $context['acf_object_id'] ) {
-			return $result;
-		}
-
-		$rows      = get_field( $repeater_field, $context['acf_object_id'] );
-		$requested = isset( $context['requested'] ) ? $context['requested'] : 'auto';
-
-		// Preserve the plugin's established automatic Options-page fallback, but
-		// never override a context the user explicitly selected.
-		if ( ( ! is_array( $rows ) || empty( $rows ) ) && 'auto' === $requested && 'options' !== $context['acf_object_id'] ) {
-			$options_rows = get_field( $repeater_field, 'options' );
-			if ( is_array( $options_rows ) && ! empty( $options_rows ) ) {
-				$rows                    = $options_rows;
-				$result['type']          = 'options';
-				$result['acf_object_id'] = 'options';
-				$result['object_id']     = 'options';
-				$result['label']         = __( 'Options page (automatic fallback)', 'dynamic-elementor-acf-repeater' );
-			}
-		}
-
-		if ( ! is_array( $rows ) || empty( $rows ) ) {
-			$result['status'] = 'empty';
-			$result['reason'] = __( 'The resolved ACF object has no rows for this field.', 'dynamic-elementor-acf-repeater' );
-			return $result;
-		}
-
-		$result['status']    = 'ready';
-		$result['row_count'] = count( $rows );
-		$result['reason']    = __( 'Repeater rows resolved successfully.', 'dynamic-elementor-acf-repeater' );
-		return $result;
-	}
-
-	/**
 	 * Convert a normalized context back into an ACF-compatible object ID.
 	 *
 	 * @param mixed $value User-supplied explicit object ID.

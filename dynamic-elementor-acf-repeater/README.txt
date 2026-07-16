@@ -4,7 +4,7 @@ Tags: elementor, loop grid, repeater fields, acf repeater, dynamic tags
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,7 +24,7 @@ Please ensure you have these plugins installed and activated before using Dynami
 
 = Compatibility boundary =
 
-Version 1.2.0 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
+Version 1.2.1 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
 
 Automatic context resolves Elementor's configured preview post, queried term or author objects, the current post, and the ACF Options page fallback. Free users can also select Current Post, Queried Object, or Options directly. Pro adds Current User and explicit post, user, taxonomy-term, or Options object IDs.
 
@@ -53,7 +53,6 @@ The free version of Dynamic Elementor ACF Repeater provides essential functional
 * Loop Grid widget integration
 * Support for repeater fields on ACF Options page
 * Automatic, current-post, queried-object, and Options context selection
-* Live context and row diagnostics in the Elementor editor
 
 = Pro Version =
 
@@ -111,15 +110,29 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 == Changelog ==
 
+= 1.2.1 =
+
+* Lightbox visual compatibility
+  - Removed plugin-generated buttons from Loop items and removed the editor diagnostic overlay.
+  - Restored the lightbox to a dim overlay containing the cloned Loop item, with no generated title, white panel, toolbar, or footer.
+  - Kept nested links and form controls interactive while non-interactive card clicks open the lightbox.
+  - Prevented site-wide button styles from adding backgrounds, borders, or rounded shapes to close and previous/next controls.
+* Elementor editor
+  - Applied width, height, padding, background, navigation, and close-control changes to an already-open lightbox preview.
+  - Restored Content Height sizing on the cloned Loop item and its background-bearing Elementor root instead of sizing only the modal wrapper.
+  - Preserved Loop Carousel item deduplication and editor document-handle access without adding template markup.
+* Packaging
+  - Kept the Freemius source header neutral while labeling licensed premium installs as PRO without duplicating an existing suffix.
+
 = 1.2.0 =
 
 * Context controls
   - Added one normalized ACF context resolver for Loop Grid, Loop Carousel, relationship queries, filters, and signed filter refreshes.
   - Added Automatic, Current Post, Queried Object, and Options selectors to Free; Pro also supports Current User and explicit post, user, taxonomy-term, or Options IDs.
-  - Added compact Elementor editor diagnostics that show the resolved source, field, and row count without changing frontend markup.
+  - Added editor context diagnostics; these were removed in 1.2.1 because they imposed visible UI on the canvas.
 * Elementor editor
   - Restored lightbox opening inside AJAX-rendered Loop Grid and Loop Carousel previews.
-  - Kept lightbox triggers clickable above Elementor's document edit handle and initialized widgets added after the preview first loads.
+  - Added per-item lightbox trigger buttons; these were removed in 1.2.1 in favor of the existing card click surface.
   - Restored all Pro lightbox Style controls for both Loop Grid and Loop Carousel.
 * Reliability
   - Preserved non-post ACF object IDs through virtual rows and signed filter requests.

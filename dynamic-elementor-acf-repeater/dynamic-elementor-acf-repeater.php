@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Dynamic Elementor ACF Repeater
  * Description: Allows ACF repeater field values to be used in Elementor Loop Grids via Dynamic Tags.
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author:      WP Luna
  * Author URI:  https://wpluna.com
  * License:     GPL-2.0+
@@ -25,7 +25,7 @@ use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Controls\LightboxRepeaterVisibilityControl;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
 use DynamicElementorAcfRepeater\AdminSettingsNotices;
-define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '1.2.0' );
+define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '1.2.1' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_PRO_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_PHP_VERSION', '7.4' );
@@ -103,6 +103,32 @@ if ( !function_exists( 'earluna_can_use_premium_code' ) ) {
     }
 
 }
+if ( !function_exists( 'earluna_label_premium_plugin' ) ) {
+    /**
+     * Distinguish a licensed premium install without changing the neutral source
+     * header that Freemius uses to generate the WordPress.org Free package.
+     *
+     * @param array<string, array<string, mixed>> $plugins Installed plugin data.
+     * @return array<string, array<string, mixed>>
+     */
+    function earluna_label_premium_plugin(  $plugins  ) {
+        if ( !is_array( $plugins ) || !earluna_can_use_premium_code() ) {
+            return $plugins;
+        }
+        $basename = plugin_basename( __FILE__ );
+        if ( !isset( $plugins[$basename] ) ) {
+            return $plugins;
+        }
+        foreach ( array('Name', 'Title') as $key ) {
+            if ( isset( $plugins[$basename][$key] ) && !preg_match( '/\\sPRO$/i', trim( (string) $plugins[$basename][$key] ) ) ) {
+                $plugins[$basename][$key] = rtrim( (string) $plugins[$basename][$key] ) . ' PRO';
+            }
+        }
+        return $plugins;
+    }
+
+}
+add_filter( 'all_plugins', 'earluna_label_premium_plugin' );
 if ( !function_exists( 'earluna_uninstall_site_data' ) ) {
     /**
      * Remove settings and legacy metadata owned by this plugin on one site.
@@ -337,7 +363,7 @@ class Dynamic_Elementor_ACF_Repeater {
     }
 
     /**
-     * Style editor-only diagnostics in both Free and Pro preview iframes.
+     * Load plugin styles inside Free and Pro preview iframes.
      */
     public function enqueue_preview_styles() {
         $this->register_assets();

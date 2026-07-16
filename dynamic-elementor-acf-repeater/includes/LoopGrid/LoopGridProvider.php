@@ -33,7 +33,6 @@ class LoopGridProvider {
 
 		// Add filter for virtual post classes
 		add_filter( 'post_class', array( $this, 'add_virtual_post_classes' ), 10, 3 );
-		add_filter( 'elementor/widget/render_content', array( $this, 'inject_context_diagnostics' ), 9, 2 );
 	}
 
 	protected function init_controls() {
@@ -241,99 +240,6 @@ class LoopGridProvider {
 		}
 
 		return $this->context_resolver;
-	}
-
-	/**
-	 * Return the normalized editor diagnostic for one Loop widget.
-	 *
-	 * @param array<string, mixed> $settings Elementor widget settings.
-	 * @return array<string, int|string>
-	 */
-	public function get_context_diagnostics( $settings ) {
-		$field        = isset( $settings['acf_repeater_field'] ) ? $settings['acf_repeater_field'] : '';
-		$current_only = isset( $settings['query_current_post_only'] ) ? $settings['query_current_post_only'] : 'yes';
-		$requested    = isset( $settings[ ContextResolver::SETTING_TYPE ] ) ? sanitize_key( $settings[ ContextResolver::SETTING_TYPE ] ) : 'auto';
-
-		if ( 'auto' === $requested && 'yes' !== $current_only ) {
-			$post_type = isset( $settings['post_query_post_type'] ) ? sanitize_key( $settings['post_query_post_type'] ) : 'post';
-			return array(
-				'requested'     => 'auto',
-				'type'          => 'query',
-				'acf_object_id' => 'query:' . $post_type,
-				'object_id'     => 0,
-				'label'         => __( 'All queried objects', 'dynamic-elementor-acf-repeater' ) . ' (' . $post_type . ')',
-				'reason'        => __( 'Rows are aggregated from the widget query instead of one ACF object.', 'dynamic-elementor-acf-repeater' ),
-				'field'         => (string) $field,
-				'row_count'     => 0,
-				'status'        => $field ? 'aggregate' : 'missing_field',
-			);
-		}
-
-		return $this->get_context_resolver()->diagnose( $field, $settings );
-	}
-
-	/**
-	 * Add a compact live resolver report above Loop widgets in Elementor preview.
-	 */
-	public function inject_context_diagnostics( $content, $widget ) {
-		if ( ! $this->is_elementor_editor_preview() || ! in_array( $widget->get_name(), array( 'loop-grid', 'loop-carousel' ), true ) ) {
-			return $content;
-		}
-
-		$settings = $widget->get_settings_for_display();
-		if ( ! isset( $settings['use_acf_repeater'] ) || 'yes' !== $settings['use_acf_repeater'] ) {
-			return $content;
-		}
-
-		$diagnostic = $this->get_context_diagnostics( $settings );
-		$status     = isset( $diagnostic['status'] ) ? sanitize_key( $diagnostic['status'] ) : 'missing_context';
-		if ( 'aggregate' === $status ) {
-			$diagnostic['row_count'] = $this->count_rendered_loop_items( $content );
-		}
-		$status_text = in_array( $status, array( 'ready', 'aggregate' ), true )
-			/* translators: %d: Number of resolved repeater rows. */
-			? sprintf( __( '%d rows resolved', 'dynamic-elementor-acf-repeater' ), absint( $diagnostic['row_count'] ) )
-			: ( 'empty' === $status ? __( 'No rows found', 'dynamic-elementor-acf-repeater' ) : __( 'Context incomplete', 'dynamic-elementor-acf-repeater' ) );
-
-		$notice  = '<details class="ear-context-diagnostic ear-context-diagnostic--' . esc_attr( $status ) . '">';
-		$notice .= '<summary aria-label="' . esc_attr__( 'Show ACF repeater context diagnostic', 'dynamic-elementor-acf-repeater' ) . '"><span class="ear-context-diagnostic__status">' . esc_html( $status_text ) . '</span></summary>';
-		$notice .= '<div class="ear-context-diagnostic__details">';
-		$notice .= '<span><strong>' . esc_html__( 'Source:', 'dynamic-elementor-acf-repeater' ) . '</strong> ' . esc_html( $diagnostic['label'] ) . ' <code>' . esc_html( (string) $diagnostic['acf_object_id'] ) . '</code></span>';
-		$notice .= '<span><strong>' . esc_html__( 'Field:', 'dynamic-elementor-acf-repeater' ) . '</strong> <code>' . esc_html( (string) $diagnostic['field'] ) . '</code></span>';
-		if ( 'ready' !== $status && ! empty( $diagnostic['reason'] ) ) {
-			$notice .= '<span class="ear-context-diagnostic__reason">' . esc_html( $diagnostic['reason'] ) . '</span>';
-		}
-		$notice .= '</div></details>';
-
-		return $notice . $content;
-	}
-
-	private function count_rendered_loop_items( $content ) {
-		if ( class_exists( '\\WP_HTML_Tag_Processor' ) ) {
-			$processor = new \WP_HTML_Tag_Processor( $content );
-			$count     = 0;
-			while ( $processor->next_tag( array( 'class_name' => 'e-loop-item' ) ) ) {
-				++$count;
-			}
-			return $count;
-		}
-
-		return preg_match_all( '/class=(?:"[^"]*\\be-loop-item\\b[^"]*"|\'[^\']*\\be-loop-item\\b[^\']*\')/i', $content, $matches );
-	}
-
-	private function is_elementor_editor_preview() {
-		if ( ! class_exists( '\\Elementor\\Plugin' ) ) {
-			return false;
-		}
-
-		try {
-			$elementor  = \Elementor\Plugin::instance();
-			$is_editor  = isset( $elementor->editor ) && method_exists( $elementor->editor, 'is_edit_mode' ) && $elementor->editor->is_edit_mode();
-			$is_preview = isset( $elementor->preview ) && method_exists( $elementor->preview, 'is_preview_mode' ) && $elementor->preview->is_preview_mode();
-			return $is_editor || $is_preview;
-		} catch ( \Throwable $throwable ) {
-			return false;
-		}
 	}
 
 	public function get_acf_repeater_fields() {
