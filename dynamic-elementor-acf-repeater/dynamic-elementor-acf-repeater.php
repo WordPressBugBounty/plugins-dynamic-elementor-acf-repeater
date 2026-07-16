@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Dynamic Elementor ACF Repeater
  * Description: Allows ACF repeater field values to be used in Elementor Loop Grids via Dynamic Tags.
- * Version: 1.2.1
+ * Version: 2.0.1
  * Author:      WP Luna
  * Author URI:  https://wpluna.com
  * License:     GPL-2.0+
@@ -11,10 +11,11 @@
  * Text Domain: dynamic-elementor-acf-repeater
  * Requires at least: 6.0
  * Requires PHP: 7.4
- * Requires Plugins: elementor, advanced-custom-fields
+ * Requires Plugins: elementor
  * Elementor tested up to: 4.1.5
  * Elementor Pro tested up to: 4.1.3
  * ACF PRO tested up to: 6.3.12
+ * Secure Custom Fields tested up to: 6.9.1
  *
  */
 if ( !defined( 'ABSPATH' ) ) {
@@ -25,7 +26,7 @@ use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Controls\LightboxRepeaterVisibilityControl;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
 use DynamicElementorAcfRepeater\AdminSettingsNotices;
-define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '1.2.1' );
+define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '2.0.1' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_PRO_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_PHP_VERSION', '7.4' );
@@ -89,10 +90,13 @@ if ( !function_exists( 'earluna_can_use_premium_code' ) ) {
      */
     function earluna_can_use_premium_code() {
         $required_paths = array(
+            'includes/Controls/ProControls/FlexibleContentControls.php',
             'includes/Controls/ProControls/LoopGridControlsBasePro.php',
             'includes/Controls/ProControls/LoopGridLightboxControls.php',
             'includes/LoopGrid/ProFeatures/LoopGridFilter.php',
-            'includes/LoopGrid/ProFeatures/LoopGridProviderPro.php'
+            'includes/LoopGrid/ProFeatures/LoopGridProviderPro.php',
+            'includes/LoopGrid/ProFeatures/RowSourceRegistry.php',
+            'includes/LoopGrid/ProFeatures/SkinFlexibleContent.php'
         );
         foreach ( $required_paths as $relative_path ) {
             if ( !is_readable( DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . $relative_path ) ) {

@@ -148,9 +148,14 @@ class RestHandler {
         $post_id = absint( $request->get_param( 'post_id' ) );
         $repeater_field = $this->settings->get_saved_repeater_field( $post_id );
         $field_object = ( $repeater_field ? get_field_object( $repeater_field ) : null );
+        $field_label = ( $field_object && isset( $field_object['label'] ) ? $field_object['label'] : '' );
+        if ( !$field_label && earluna_can_use_premium_code() && class_exists( '\\DynamicElementorAcfRepeater\\LoopGrid\\RowSourceRegistry' ) ) {
+            $schema = \DynamicElementorAcfRepeater\LoopGrid\RowSourceRegistry::instance()->get_schema( $repeater_field );
+            $field_label = ( $schema && isset( $schema['option_label'] ) ? $schema['option_label'] : '' );
+        }
         return array(
             'repeater_field'      => sanitize_text_field( $repeater_field ),
-            'repeater_field_name' => ( $field_object && isset( $field_object['label'] ) ? sanitize_text_field( $field_object['label'] ) : '' ),
+            'repeater_field_name' => sanitize_text_field( $field_label ),
         );
     }
 

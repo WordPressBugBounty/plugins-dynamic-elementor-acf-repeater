@@ -69,12 +69,12 @@ class AdminSettingsNotices {
 
 	public static function admin_notice_acf_missing() {
 		/* translators: %s: Plugin name */
-		$message = __( 'Dynamic Elementor ACF Repeater requires Advanced Custom Fields to be installed and active.', 'dynamic-elementor-acf-repeater' );
+		$message = __( 'Dynamic Elementor ACF Repeater requires Secure Custom Fields or Advanced Custom Fields Pro to be installed and active.', 'dynamic-elementor-acf-repeater' );
 		self::render_admin_notice( $message, 'error' );
 	}
 
 	public static function admin_notice_acf_pro_missing() {
-		$message = __( 'Dynamic Elementor ACF Repeater is active, but repeater fields require ACF Pro.', 'dynamic-elementor-acf-repeater' );
+		$message = __( 'Dynamic Elementor ACF Repeater is active, but repeater fields require Secure Custom Fields or Advanced Custom Fields Pro.', 'dynamic-elementor-acf-repeater' );
 		self::render_admin_notice( $message, 'warning' );
 	}
 

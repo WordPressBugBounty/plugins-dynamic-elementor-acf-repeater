@@ -46,11 +46,11 @@ class RepeaterFieldSelector {
         $document->add_control(
             'earluna_loop_repeater_field',
             [
-                'label' => __('ACF Repeater Field for Loop', 'dynamic-elementor-acf-repeater'),
+				'label' => earluna_can_use_premium_code() ? __('ACF Row Schema for Loop', 'dynamic-elementor-acf-repeater') : __('ACF Repeater Field for Loop', 'dynamic-elementor-acf-repeater'),
                 'type' => Controls_Manager::SELECT,
                 'options' => $repeater_fields,
                 'default' => $saved_repeater_field ?: '',
-                'description' => __('Select an ACF repeater field to use in this loop template.', 'dynamic-elementor-acf-repeater'),
+				'description' => earluna_can_use_premium_code() ? __('Select the Repeater row or Flexible Content layout represented by this Loop template.', 'dynamic-elementor-acf-repeater') : __('Select an ACF repeater field to use in this loop template.', 'dynamic-elementor-acf-repeater'),
             ]
         );
 
@@ -87,6 +87,10 @@ class RepeaterFieldSelector {
                 }
             }
         }
+
+		if ( earluna_can_use_premium_code() && class_exists( '\\DynamicElementorAcfRepeater\\LoopGrid\\RowSourceRegistry' ) ) {
+			$repeater_fields += \DynamicElementorAcfRepeater\LoopGrid\RowSourceRegistry::instance()->get_schema_options();
+		}
 
         return $repeater_fields;
     }

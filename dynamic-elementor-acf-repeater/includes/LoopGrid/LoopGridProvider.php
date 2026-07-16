@@ -63,15 +63,15 @@ class LoopGridProvider {
 			$source_id     = $query->get( 'earluna_context_id' );
 			$source_label  = $query->get( 'earluna_context_label' );
 			$requested     = $query->get( 'earluna_context_requested' );
-			$repeater_data = $source_id ? get_field( $repeater_field, $source_id ) : null;
+			$repeater_data = $source_id ? $this->resolve_row_source_rows( $repeater_field, $source_id ) : array();
 
-			if ( ( ! is_array( $repeater_data ) || empty( $repeater_data ) ) && 'auto' === $requested && 'options' !== $source_id ) {
+			if ( empty( $repeater_data ) && 'auto' === $requested && 'options' !== $source_id ) {
 				$source_id     = 'options';
 				$source_label  = __( 'Options page (automatic fallback)', 'dynamic-elementor-acf-repeater' );
-				$repeater_data = get_field( $repeater_field, $source_id );
+				$repeater_data = $this->resolve_row_source_rows( $repeater_field, $source_id );
 			}
 
-			if ( ! is_array( $repeater_data ) || empty( $repeater_data ) ) {
+			if ( empty( $repeater_data ) ) {
 				return array();
 			}
 
@@ -84,9 +84,9 @@ class LoopGridProvider {
 
 		// If no posts provided, create a dummy post for options page data
 		if ( empty( $posts ) ) {
-			$repeater_data = get_field( $repeater_field, 'options' );
+			$repeater_data = $this->resolve_row_source_rows( $repeater_field, 'options' );
 
-			if ( $repeater_data && is_array( $repeater_data ) ) {
+			if ( ! empty( $repeater_data ) ) {
 				$virtual_posts = $this->create_virtual_posts( $repeater_data, 'options', __( 'Options page', 'dynamic-elementor-acf-repeater' ), $repeater_field );
 
 				return $this->prepare_virtual_posts_for_output( $virtual_posts, $query );
@@ -94,13 +94,13 @@ class LoopGridProvider {
 		}
 
 		foreach ( $posts as $post ) {
-			$repeater_data = get_field( $repeater_field, $post->ID );
+			$repeater_data = $this->resolve_row_source_rows( $repeater_field, $post->ID );
 
 			// Fallback to global Options page if no data on the post itself
-			if ( ! $repeater_data || ! is_array( $repeater_data ) ) {
-				$repeater_data = get_field( $repeater_field, 'options' );
+			if ( empty( $repeater_data ) ) {
+				$repeater_data = $this->resolve_row_source_rows( $repeater_field, 'options' );
 				// If still empty, skip this post
-				if ( ! $repeater_data || ! is_array( $repeater_data ) ) {
+				if ( empty( $repeater_data ) ) {
 					continue;
 				}
 			}
@@ -124,13 +124,18 @@ class LoopGridProvider {
 	 * @param object|null       $source_post   Source post when the context is singular.
 	 * @return array<int, object>
 	 */
-	private function create_virtual_posts( $repeater_data, $source_id, $source_label, $repeater_field, $source_post = null ) {
+	protected function create_virtual_posts( $repeater_data, $source_id, $source_label, $repeater_field, $source_post = null ) {
 		$virtual_posts = array();
 		$source_label  = $source_label ? $source_label : (string) $source_id;
 
-		foreach ( $repeater_data as $index => $row ) {
+		foreach ( $repeater_data as $index => $resolved_row ) {
+			$row                       = isset( $resolved_row['data'] ) && is_array( $resolved_row['data'] ) ? $resolved_row['data'] : array();
+			$row_path                  = isset( $resolved_row['row_path'] ) && is_array( $resolved_row['row_path'] ) ? $resolved_row['row_path'] : array();
+			$row_type                  = isset( $resolved_row['row_type'] ) ? $resolved_row['row_type'] : 'repeater';
+			$layout                    = isset( $resolved_row['layout'] ) ? $resolved_row['layout'] : '';
+			$schema_selector           = isset( $resolved_row['schema_selector'] ) ? $resolved_row['schema_selector'] : '';
 			$virtual_post              = new \stdClass();
-			$virtual_post->ID          = VirtualRowContext::register( $source_id, $index, $repeater_field, $source_label );
+			$virtual_post->ID          = VirtualRowContext::register( $source_id, $index, $repeater_field, $source_label, $row_path, $row_type, $layout, $schema_selector );
 			$virtual_post->post_parent = is_numeric( $source_id ) ? absint( $source_id ) : 0;
 			$virtual_post->post_title  = $source_label . ' - ' . $repeater_field . ' ' . ( $index + 1 );
 			$virtual_post->post_status = 'publish';
@@ -142,11 +147,52 @@ class LoopGridProvider {
 			$virtual_post->acf_repeater_source_label = $source_label;
 			$virtual_post->acf_repeater_field        = $repeater_field;
 			$virtual_post->earluna_loop_index        = $index;
+			$virtual_post->earluna_row_path          = $row_path;
+			$virtual_post->earluna_row_type          = $row_type;
+			$virtual_post->earluna_flexible_layout   = $layout;
+			$virtual_post->earluna_schema_selector   = $schema_selector;
 
 			$virtual_posts[] = $virtual_post;
 		}
 
 		return $virtual_posts;
+	}
+
+	/**
+	 * Normalize a classic top-level Repeater into the shared row contract.
+	 *
+	 * Premium overrides this method for nested paths and Flexible Content.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	protected function resolve_row_source_rows( $repeater_field, $source_id ) {
+		$repeater_data = get_field( $repeater_field, $source_id );
+		if ( ! is_array( $repeater_data ) ) {
+			return array();
+		}
+
+		$rows = array();
+		foreach ( $repeater_data as $index => $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+			$rows[] = array(
+				'data'            => $row,
+				'row_path'        => array(
+					array(
+						'field'  => sanitize_key( $repeater_field ),
+						'index'  => absint( $index ),
+						'layout' => '',
+					),
+				),
+				'row_type'        => 'repeater',
+				'layout'          => '',
+				'source_selector' => $repeater_field,
+				'schema_selector' => $repeater_field,
+			);
+		}
+
+		return $rows;
 	}
 
 	/**

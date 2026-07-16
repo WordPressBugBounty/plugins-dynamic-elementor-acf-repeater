@@ -78,6 +78,8 @@ class MasterMind {
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/ContextControls.php';
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/EarSwitcherControl.php';
         if ( earluna_can_use_premium_code() ) {
+            require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/LoopGrid/ProFeatures/RowSourceRegistry.php';
+            require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/ProControls/FlexibleContentControls.php';
             require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/ProControls/LoopGridControlsBasePro.php';
             require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Controls/ProControls/LoopGridLightboxControls.php';
             require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/LoopGrid/ProFeatures/LoopGridFilter.php';

@@ -149,9 +149,15 @@ class DynamicTagControls {
         }
         
         $repeater_fields = [];
-        $field = acf_get_field($selected_repeater);
-        
-        if ($field && 'repeater' === $field['type']) {
+		$field = acf_get_field($selected_repeater);
+		$schema = null;
+		if ( earluna_can_use_premium_code() && class_exists( '\\DynamicElementorAcfRepeater\\LoopGrid\\RowSourceRegistry' ) ) {
+			$schema = \DynamicElementorAcfRepeater\LoopGrid\RowSourceRegistry::instance()->get_schema( $selected_repeater );
+		}
+		$sub_fields = $schema && isset( $schema['sub_fields'] ) ? $schema['sub_fields'] : ( $field && 'repeater' === $field['type'] ? $field['sub_fields'] : array() );
+		$schema_label = $schema && isset( $schema['option_label'] ) ? $schema['option_label'] : ( $field && isset( $field['label'] ) ? $field['label'] : '' );
+
+		if ( ! empty( $sub_fields ) ) {
             $options = [];
             $all_supported_fields = $supported_fields;
 
@@ -159,7 +165,7 @@ class DynamicTagControls {
                 $all_supported_fields = $tag->get_supported_fields();
             }
 
-            foreach ($field['sub_fields'] as $sub_field) {
+			foreach ($sub_fields as $sub_field) {
                 $label = $sub_field['label'];
                 $type = $sub_field['type'];
                 $key = $sub_field['key'];
@@ -175,7 +181,7 @@ class DynamicTagControls {
             }
             if (!empty($options)) {
                 $repeater_fields[] = [
-                    'label' => $field['label'],
+					'label' => $schema_label,
                     'options' => $options,
                 ];
             }

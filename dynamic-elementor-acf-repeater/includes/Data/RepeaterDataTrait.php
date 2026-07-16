@@ -28,7 +28,19 @@ trait RepeaterDataTrait {
 	public function get_repeater_value( $field_key ) {
 		global $post;
 
-		$post_id = get_the_ID();
+		$post_id      = get_the_ID();
+		$field_object = get_field_object( $field_key );
+
+		if ( ! $field_object ) {
+			return null;
+		}
+
+		// Virtual rows already carry the formatted ACF row that Elementor is
+		// rendering. Reading it directly supports nested paths and Flexible
+		// Content without trying to reconstruct the row from a synthetic ID.
+		if ( is_object( $post ) && isset( $post->acf_repeater_data ) && is_array( $post->acf_repeater_data ) ) {
+			return $this->get_row_field_value( $post->acf_repeater_data, $field_object );
+		}
 
 		// Get document once and reuse it
 		$document = \Elementor\Plugin::$instance->documents->get_current();
@@ -58,7 +70,11 @@ trait RepeaterDataTrait {
 			$saved_repeater_field = get_post_meta( $document_id, 'earluna_loop_repeater_field', true );
 
 			$saved_field_object = $saved_repeater_field && function_exists( 'acf_get_field' ) ? acf_get_field( $saved_repeater_field ) : null;
-			$repeater_field     = $saved_field_object && isset( $saved_field_object['type'] ) && 'repeater' === $saved_field_object['type']
+			$saved_row_schema   = null;
+			if ( $saved_repeater_field && function_exists( 'earluna_can_use_premium_code' ) && earluna_can_use_premium_code() && class_exists( '\\DynamicElementorAcfRepeater\\LoopGrid\\RowSourceRegistry' ) ) {
+				$saved_row_schema = \DynamicElementorAcfRepeater\LoopGrid\RowSourceRegistry::instance()->get_schema( $saved_repeater_field );
+			}
+			$repeater_field = ( $saved_field_object && isset( $saved_field_object['type'] ) && 'repeater' === $saved_field_object['type'] ) || $saved_row_schema
 				? $saved_repeater_field
 				: $this->get_repeater_field( $post_id );
 		} else {
@@ -67,6 +83,21 @@ trait RepeaterDataTrait {
 
 		if ( ! empty( $context['repeater_field'] ) ) {
 			$repeater_field = $context['repeater_field'];
+		}
+
+		// Premium Loop templates can select a nested row schema or one Flexible
+		// Content layout. Resolve a representative preview row through the same
+		// registry used by frontend virtual posts.
+		if ( function_exists( 'earluna_can_use_premium_code' ) && earluna_can_use_premium_code() && class_exists( '\\DynamicElementorAcfRepeater\\LoopGrid\\RowSourceRegistry' ) ) {
+			$registry = \DynamicElementorAcfRepeater\LoopGrid\RowSourceRegistry::instance();
+			if ( $registry->get_schema( $repeater_field ) ) {
+				$preview_rows = $registry->resolve_schema_rows( $repeater_field, $post_id );
+				if ( empty( $preview_rows ) ) {
+					return null;
+				}
+				$preview_index = isset( $preview_rows[ $current_index ] ) ? $current_index : 0;
+				return $this->get_row_field_value( $preview_rows[ $preview_index ]['data'], $field_object );
+			}
 		}
 
 		// Fallback: If no repeater field was detected on the current post, look for one on the global ACF Options page.
@@ -91,12 +122,6 @@ trait RepeaterDataTrait {
 			return null;
 		}
 
-		$field_object = get_field_object( $field_key );
-
-		if ( ! $field_object ) {
-			return null;
-		}
-
 		$field_name = $field_object['name'];
 
 		if ( ! isset( $repeater_data[ $current_index ][ $field_name ] ) ) {
@@ -104,5 +129,19 @@ trait RepeaterDataTrait {
 		}
 
 		return $repeater_data[ $current_index ][ $field_name ];
+	}
+
+	private function get_row_field_value( array $row, array $field_object ) {
+		$field_name = isset( $field_object['name'] ) ? $field_object['name'] : '';
+		$field_key  = isset( $field_object['key'] ) ? $field_object['key'] : '';
+
+		if ( $field_name && array_key_exists( $field_name, $row ) ) {
+			return $row[ $field_name ];
+		}
+		if ( $field_key && array_key_exists( $field_key, $row ) ) {
+			return $row[ $field_key ];
+		}
+
+		return null;
 	}
 }

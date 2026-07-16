@@ -4,7 +4,7 @@ Tags: elementor, loop grid, repeater fields, acf repeater, dynamic tags
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,17 +18,17 @@ This plugin requires the following:
 * PHP 7.4 or higher
 * Elementor 3.8 or higher
 * Elementor Pro 3.8 or higher for Loop Grid/Loop Carousel features
-* Advanced Custom Fields; repeater features require ACF Pro
+* Secure Custom Fields or Advanced Custom Fields Pro with Repeater/Flexible Content field support
 
 Please ensure you have these plugins installed and activated before using Dynamic Elementor ACF Repeater.
 
 = Compatibility boundary =
 
-Version 1.2.1 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
+Version 2.0.1 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
 
 Automatic context resolves Elementor's configured preview post, queried term or author objects, the current post, and the ACF Options page fallback. Free users can also select Current Post, Queried Object, or Options directly. Pro adds Current User and explicit post, user, taxonomy-term, or Options object IDs.
 
-The free package boots safely with ACF Free, but ACF Pro is required before repeater fields can be created or rendered. Premium source and premium REST routes are excluded from the free package.
+The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.0.1 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
 
 == Description ==
 
@@ -46,7 +46,7 @@ Dynamic Elementor ACF Repeater comes in two versions: Free and Pro. Here's a bre
 
 The free version of Dynamic Elementor ACF Repeater provides essential functionality for integrating ACF repeater fields with Elementor:
 
-* Basic integration with Elementor Pro and ACF Pro
+* Basic integration with Elementor Pro and Secure Custom Fields or ACF Pro
 * Support for image and text repeater fields in Elementor dynamic tags for loop items and loop grid
 * Repeater images can be used as Loop Item background images
 * ACF Repeater Text, Image, and Original Post Title dynamic tags
@@ -77,6 +77,9 @@ The Pro version includes everything in the free version, plus a host of advanced
 * Nested Relationship/Post Object fields: Support for relationship fields inside repeaters (select via repeater:subfield)
 * Loop Carousel support
 * Current-user and explicit ACF object context selection
+* True nested Repeater row sources through Repeater, Flexible Content, and Group field paths
+* Flexible Content layout-to-Loop-template mapping for Loop Grid and Loop Carousel
+* Per-layout row schemas and representative values while editing mapped Loop Item templates
 * Element Display Conditions: ACF Repeater Field condition (show/hide by repeater sub‑field)
 * New Dynamic Tags (PRO): ACF Repeater Link Title, ACF Repeater Link Target, ACF Repeater Color, ACF Repeater Icon
 * Enhanced URL support (PRO): ACF Link field now maps to URL/Title/Target
@@ -96,6 +99,10 @@ The Pro version comes with a 3-day free trial. You can cancel anytime before the
 
 The free tags support text/textarea, image, URL-compatible values, and original post titles. The premium tags add file/media, gallery, URL/link, color, icon, link title, and link target output. Relationship and taxonomy values are formatted according to their ACF field type; multiple values use deterministic ordering.
 
+= How do I map Flexible Content layouts to different Loop templates? =
+
+In each Loop Item's Page Settings, choose the ACF Row Schema that the template represents. In the Loop Grid or Loop Carousel, enable ACF Rows, select the Flexible Content row source, choose the ACF Flexible Content template type, and assign a Loop Item to each discovered layout. Unmapped layouts use the normal Loop template unless Skip Row is selected.
+
 = Is there documentation available? =
 
 Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-acf-repeater-docs/usage-guide/).
@@ -109,6 +116,34 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 
 == Changelog ==
+
+= 2.0.1 =
+
+* Compatibility
+  - Restored the established field-provider behavior: Secure Custom Fields and Advanced Custom Fields Pro are both supported through their shared runtime API.
+  - Kept Elementor as the only hard WordPress.org plugin dependency because the dependency header cannot express alternative providers.
+
+= 2.0.0 =
+
+* Relationship queries (Pro)
+  - Preserved Elementor posts-per-page and pagination when resolving Relationship or Post Object fields from the current ACF object.
+  - Kept selected posts in field order without routing them through Repeater virtual-row pagination.
+* Nested row sources (Pro)
+  - Added stable field-key paths for Repeaters nested inside Repeaters, Flexible Content layouts, and Group fields.
+  - Flattened matching nested rows in source order while preserving their complete row/index path and formatted ACF values.
+  - Kept existing top-level Repeater widget settings and saved Loop Items backward-compatible.
+* Flexible Content templates (Pro)
+  - Added the ACF Flexible Content Loop skin for Loop Grid and Loop Carousel.
+  - Added one opt-in Loop Item mapping control per discovered Flexible Content layout.
+  - Added explicit fallback-to-default and skip-unmapped behavior without inserting frontend buttons, panels, or other visual markup.
+  - Disabled Elementor's position-based Alternate Templates only while the data-driven Flexible Content skin renders, then restored the saved setting.
+* Elementor editor
+  - Added row-schema choices for nested Repeaters and individual Flexible Content layouts in Loop Item Page Settings.
+  - Limited dynamic-tag field choices to the selected layout schema.
+  - Rendered representative nested/layout values in the Loop Item editor preview through the same resolver used on the frontend.
+* Validation
+  - Added PHPUnit coverage for discovery, stable selectors, nested path flattening, layout schemas, and virtual-row values.
+  - Added real WordPress browser coverage for per-layout output, nested rows, mapping controls, and Loop Item preview data.
 
 = 1.2.1 =
 
