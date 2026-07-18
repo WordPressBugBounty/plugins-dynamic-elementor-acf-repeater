@@ -1,10 +1,10 @@
 === Dynamic Elementor ACF Repeater ===
-Contributors: wplunadev, freemius
+Contributors: wplunadev
 Tags: elementor, loop grid, repeater fields, acf repeater, dynamic tags
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,11 +24,11 @@ Please ensure you have these plugins installed and activated before using Dynami
 
 = Compatibility boundary =
 
-Version 2.0.1 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
+Version 2.1.0 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
 
 Automatic context resolves Elementor's configured preview post, queried term or author objects, the current post, and the ACF Options page fallback. Free users can also select Current Post, Queried Object, or Options directly. Pro adds Current User and explicit post, user, taxonomy-term, or Options object IDs.
 
-The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.0.1 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
+The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.1.0 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
 
 == Description ==
 
@@ -61,6 +61,7 @@ The Pro version includes everything in the free version, plus a host of advanced
 * File, gallery, link, relationship, taxonomy, color, icon, and other supported ACF values
 * ACF Repeater File, Gallery, URL, Color, Icon, Link Title, and Link Target dynamic tags
 * Multiple independently filtered Loop Grids on the same page, post, or template
+* Opt-in integration with Elementor Pro's native Taxonomy Filter widget, including multi-select filtering and native pagination/Load More
 * Lightbox functionality on the loop grid widget
 * Optional previous/next lightbox navigation
 * Advanced filtering capabilities for Loop Grid items with customizable URL parameters
@@ -116,6 +117,21 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 
 == Changelog ==
+
+= 2.1.0 =
+
+* Elementor native taxonomy filtering (Pro)
+  - Added an opt-in bridge from Elementor Pro's Taxonomy Filter widget to taxonomy fields stored in Repeater rows.
+  - Preserved Elementor's native filter markup, styling, URL state, multi-select behavior, and pagination/Load More controls.
+  - Limited native filter term choices to terms used by the configured current-object rows when empty terms are hidden.
+  - Applied row filtering before pagination so matches from later pages remain available.
+* Backward compatibility
+  - Kept the existing DEAR custom filter, saved controls, URL parameters, and frontend markup unchanged when native support is not enabled.
+  - Made native support explicitly opt-in and mutually exclusive with the existing custom filter for each Loop Grid.
+  - Added no setting renames, removals, or automatic migrations.
+* Validation
+  - Added unit coverage for query isolation, multi-term OR, AND, NOT IN, child terms, and filter-before-pagination behavior.
+  - Added real Elementor browser coverage for native term discovery, REST refresh, Load More, multi-select, empty results, and mobile viewport fit.
 
 = 2.0.1 =
 

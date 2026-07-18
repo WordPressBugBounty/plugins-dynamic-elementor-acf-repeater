@@ -196,11 +196,43 @@ class LoopGridProvider {
 	}
 
 	/**
+	 * Resolve rows for a widget that uses one explicit/current ACF object.
+	 *
+	 * Native Elementor filter widgets render independently from their target
+	 * Loop Grid. This read-only bridge lets the premium adapter discover which
+	 * taxonomy terms occur in that grid's rows without exposing row internals.
+	 *
+	 * @param array<string, mixed> $settings Loop widget settings.
+	 * @return array<int, array<string, mixed>>|null Rows, or null for all-posts mode.
+	 */
+	public function resolve_direct_rows_for_settings( $settings ) {
+		$current_only = isset( $settings['query_current_post_only'] ) ? $settings['query_current_post_only'] : 'yes';
+		$requested    = isset( $settings[ ContextResolver::SETTING_TYPE ] ) ? sanitize_key( $settings[ ContextResolver::SETTING_TYPE ] ) : 'auto';
+		$direct       = 'yes' === $current_only || 'auto' !== $requested;
+
+		if ( ! $direct || empty( $settings['acf_repeater_field'] ) ) {
+			return null;
+		}
+
+		$context = $this->get_context_resolver()->resolve( $settings );
+		$rows    = $this->resolve_row_source_rows( $settings['acf_repeater_field'], $context['acf_object_id'] );
+
+		if ( empty( $rows ) && 'auto' === $requested && 'options' !== $context['acf_object_id'] ) {
+			$rows = $this->resolve_row_source_rows( $settings['acf_repeater_field'], 'options' );
+		}
+
+		return $rows;
+	}
+
+	/**
 	 * Premium taxonomy filters run after row expansion. Defer pagination in
 	 * that case so matching rows on later unfiltered pages are not discarded.
 	 */
 	private function prepare_virtual_posts_for_output( $virtual_posts, $query ) {
-		if ( ! empty( $query->get( 'earluna_filter_terms' ) ) && ! empty( $query->get( 'earluna_repeater_taxonomy_field' ) ) ) {
+		$has_custom_filter = ! empty( $query->get( 'earluna_filter_terms' ) ) && ! empty( $query->get( 'earluna_repeater_taxonomy_field' ) );
+		$has_native_filter = ! empty( $query->get( 'earluna_elementor_tax_query' ) );
+
+		if ( $has_custom_filter || $has_native_filter ) {
 			return $virtual_posts;
 		}
 

@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Dynamic Elementor ACF Repeater
  * Description: Allows ACF repeater field values to be used in Elementor Loop Grids via Dynamic Tags.
- * Version: 2.0.1
+ * Version: 2.1.0
  * Author:      WP Luna
  * Author URI:  https://wpluna.com
  * License:     GPL-2.0+
@@ -26,7 +26,7 @@ use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Controls\LightboxRepeaterVisibilityControl;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
 use DynamicElementorAcfRepeater\AdminSettingsNotices;
-define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '2.0.1' );
+define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '2.1.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_PRO_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_PHP_VERSION', '7.4' );
@@ -103,7 +103,7 @@ if ( !function_exists( 'earluna_can_use_premium_code' ) ) {
                 return false;
             }
         }
-        return earluna_fs()->can_use_premium_code__premium_only();
+        return earluna_freemius_can_use_premium_code( earluna_fs() );
     }
 
 }
