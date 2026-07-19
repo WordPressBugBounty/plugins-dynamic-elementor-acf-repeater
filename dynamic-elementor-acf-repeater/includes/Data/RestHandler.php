@@ -66,12 +66,16 @@ class RestHandler {
                 'callback'            => array($this, 'render_filtered_loop_grid__premium_only'),
                 'permission_callback' => array($this, 'can_render_signed_context__premium_only'),
                 'args'                => array(
-                    'context' => array(
+                    'context'   => array(
                         'required' => true,
                         'type'     => 'string',
                     ),
-                    'slugs'   => array(
+                    'slugs'     => array(
                         'required' => false,
+                    ),
+                    'row_query' => array(
+                        'required' => false,
+                        'type'     => 'object',
                     ),
                 ),
             ) );

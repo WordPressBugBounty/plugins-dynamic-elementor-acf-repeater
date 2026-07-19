@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Plugin Name: Dynamic Elementor ACF Repeater
- * Description: Allows ACF repeater field values to be used in Elementor Loop Grids via Dynamic Tags.
- * Version: 2.1.0
+ * Plugin Name: Dynamic ACF Repeater for Elementor
+ * Description: Renders ACF or Secure Custom Fields repeater values in Elementor Loop Grids via Dynamic Tags.
+ * Version: 2.4.0
  * Author:      WP Luna
  * Author URI:  https://wpluna.com
  * License:     GPL-2.0+
@@ -26,7 +26,7 @@ use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Controls\LightboxRepeaterVisibilityControl;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
 use DynamicElementorAcfRepeater\AdminSettingsNotices;
-define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '2.1.0' );
+define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '2.4.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_PRO_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_PHP_VERSION', '7.4' );
@@ -184,7 +184,7 @@ function earluna_get_upgrade_notice(  $feature_text = ''  ) {
         /* translators: %1$s: feature text, %2$s: plugin name, %3$s: upgrade URL */
         __( '%1$s available in the PRO version of %2$s. <a target="_blank" href="%3$s">Upgrade Now!</a>', 'dynamic-elementor-acf-repeater' ),
         $feature_text,
-        'Dynamic Elementor ACF Repeater',
+        'Dynamic ACF Repeater for Elementor',
         earluna_fs()->get_upgrade_url()
     );
     return '<div class="ear-pro-notice">' . $notice . '</div>';
@@ -205,7 +205,7 @@ class Dynamic_Elementor_ACF_Repeater {
     }
 
     public function plugin_name() {
-        return 'Dynamic Elementor ACF Repeater';
+        return 'Dynamic ACF Repeater for Elementor';
     }
 
     public function get_upgrade_notice() {
@@ -255,6 +255,17 @@ class Dynamic_Elementor_ACF_Repeater {
             'premiumFields'     => $pro_fields,
             'canUsePremiumCode' => earluna_can_use_premium_code(),
             'pluginName'        => $this->plugin_name(),
+            'inspector'         => array(
+                'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+                'action'  => \DynamicElementorAcfRepeater\Support\ContextInspector::AJAX_ACTION,
+                'nonce'   => wp_create_nonce( \DynamicElementorAcfRepeater\Support\ContextInspector::NONCE_ACTION ),
+            ),
+        );
+        wp_enqueue_style(
+            'ear-context-inspector-editor',
+            plugins_url( 'assets/css/context-inspector.css', __FILE__ ),
+            array(),
+            DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION
         );
         wp_enqueue_script(
             'ear-editor-js',
@@ -264,6 +275,13 @@ class Dynamic_Elementor_ACF_Repeater {
             true
         );
         wp_localize_script( 'ear-editor-js', 'earSharedData', $shared_data );
+        wp_enqueue_script(
+            'ear-context-inspector',
+            plugins_url( 'assets/js/context-inspector.js', __FILE__ ),
+            array('elementor-editor', 'ear-editor-js'),
+            DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION,
+            true
+        );
         // Add the licensing helper inline
         $this->enqueue_licensing_helper();
     }

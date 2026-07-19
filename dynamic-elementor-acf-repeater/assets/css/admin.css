@@ -26,3 +26,488 @@
         margin-left: 8px;
     }
 }
+
+.ear-admin-wrap {
+    margin: 0 0 0 -20px;
+}
+
+.ear-admin {
+    --ear-ink: #21172f;
+    --ear-muted: #6c6275;
+    --ear-paper: #fbf9fc;
+    --ear-line: rgb(33 23 47 / 12%);
+    --ear-mint: #8de9e2;
+    --ear-rose: #ef8bc3;
+    max-width: 1440px;
+    color: var(--ear-ink);
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+.ear-admin *,
+.ear-admin *::before,
+.ear-admin *::after {
+    box-sizing: border-box;
+}
+
+.ear-admin__hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    gap: 56px;
+    align-items: center;
+    min-height: 520px;
+    padding: clamp(52px, 7vw, 96px);
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 73% 2%, rgb(141 233 226 / 24%), transparent 30%),
+        radial-gradient(circle at 8% 100%, rgb(239 139 195 / 20%), transparent 35%),
+        linear-gradient(135deg, #120d1c, #332039 58%, #51213f);
+    color: #fff;
+}
+
+.ear-admin__hero::after {
+    content: "";
+    position: absolute;
+    width: 540px;
+    height: 540px;
+    right: -170px;
+    bottom: -330px;
+    border: 1px solid rgb(255 255 255 / 13%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 58px rgb(255 255 255 / 3%), 0 0 0 116px rgb(255 255 255 / 2%);
+}
+
+.ear-admin__hero-copy,
+.ear-admin__hero-model {
+    position: relative;
+    z-index: 1;
+}
+
+.ear-admin__chips,
+.ear-admin__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.ear-admin__chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 29px;
+    padding: 5px 10px;
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 7%);
+    color: #e9e2ec;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ear-admin__chip--edition {
+    border-color: rgb(141 233 226 / 45%);
+    background: rgb(141 233 226 / 13%);
+    color: #bcf8f3;
+}
+
+.ear-admin__kicker,
+.ear-admin__section-heading > p,
+.ear-admin__compatibility > div > p {
+    margin: 28px 0 12px;
+    color: var(--ear-mint);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.ear-admin__hero h1 {
+    max-width: 780px;
+    margin: 0;
+    color: #fff;
+    font-size: clamp(40px, 5.4vw, 76px);
+    font-weight: 720;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+}
+
+.ear-admin__lede {
+    max-width: 720px;
+    margin: 27px 0 31px;
+    color: #ded7e4;
+    font-size: clamp(17px, 1.6vw, 21px);
+}
+
+.ear-admin__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 11px 18px;
+    border: 1px solid rgb(255 255 255 / 24%);
+    border-radius: 999px;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 160ms ease, background 160ms ease;
+}
+
+.ear-admin__button:hover,
+.ear-admin__button:focus {
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.ear-admin__button--primary {
+    border-color: var(--ear-mint);
+    background: var(--ear-mint);
+    color: #171020;
+}
+
+.ear-admin__button--primary:hover,
+.ear-admin__button--primary:focus {
+    color: #171020;
+    background: #b7f4ef;
+}
+
+.ear-admin__hero-model {
+    display: grid;
+    gap: 12px;
+    padding: 28px;
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 28px;
+    background: rgb(15 10 24 / 48%);
+    box-shadow: 0 28px 90px rgb(0 0 0 / 26%);
+    backdrop-filter: blur(18px);
+}
+
+.ear-admin__hero-model > div {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 3px 18px;
+    padding: 18px;
+    border: 1px solid rgb(255 255 255 / 10%);
+    border-radius: 17px;
+    background: rgb(255 255 255 / 6%);
+}
+
+.ear-admin__hero-model small {
+    grid-column: 1;
+    color: #a9f2ec;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.ear-admin__hero-model strong {
+    grid-column: 1;
+    font-size: 19px;
+}
+
+.ear-admin__hero-model span {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+    color: #bdb4c5;
+    font-size: 12px;
+}
+
+.ear-admin__hero-model i {
+    width: 1px;
+    height: 19px;
+    margin: -4px auto;
+    background: linear-gradient(var(--ear-mint), var(--ear-rose));
+}
+
+.ear-admin__promise {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.65fr) 1.35fr;
+    gap: 30px;
+    align-items: center;
+    padding: 27px clamp(32px, 7vw, 96px);
+    background: var(--ear-mint);
+}
+
+.ear-admin__promise > div {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 17px;
+}
+
+.ear-admin__promise p {
+    margin: 0;
+}
+
+.ear-admin__section {
+    padding: clamp(62px, 7vw, 96px);
+    background: var(--ear-paper);
+}
+
+.ear-admin__section--features {
+    background: #f3edf6;
+}
+
+.ear-admin__section-heading {
+    max-width: 760px;
+    margin: 0 auto 42px;
+    text-align: center;
+}
+
+.ear-admin__section-heading > p,
+.ear-admin__compatibility > div > p {
+    margin-top: 0;
+    color: #a52a69;
+}
+
+.ear-admin__section-heading h2,
+.ear-admin__compatibility h2 {
+    margin: 0;
+    color: var(--ear-ink);
+    font-size: clamp(30px, 3.4vw, 48px);
+    letter-spacing: -0.035em;
+    line-height: 1.06;
+}
+
+.ear-admin__section-heading > span {
+    display: block;
+    margin-top: 14px;
+    color: var(--ear-muted);
+}
+
+.ear-admin__steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.ear-admin__steps article,
+.ear-admin__feature {
+    padding: 28px;
+    border: 1px solid var(--ear-line);
+    border-radius: 21px;
+    background: #fff;
+    box-shadow: 0 16px 44px rgb(33 23 47 / 6%);
+}
+
+.ear-admin__steps article > span {
+    display: inline-grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 30px;
+    border-radius: 12px;
+    background: var(--ear-ink);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ear-admin__steps h3,
+.ear-admin__feature h3 {
+    margin: 0 0 10px;
+    color: var(--ear-ink);
+    font-size: 22px;
+    line-height: 1.15;
+}
+
+.ear-admin__steps p,
+.ear-admin__feature > p {
+    margin: 0;
+    color: var(--ear-muted);
+}
+
+.ear-admin__feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.ear-admin__feature {
+    position: relative;
+    overflow: hidden;
+}
+
+.ear-admin__feature::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    background: var(--feature-accent, #a52a69);
+}
+
+.ear-admin__feature--mint { --feature-accent: #45bcb3; }
+.ear-admin__feature--violet { --feature-accent: #7764be; }
+.ear-admin__feature--blue { --feature-accent: #4b88cf; }
+.ear-admin__feature--amber { --feature-accent: #d78c34; }
+.ear-admin__feature--plum { --feature-accent: #68234f; }
+
+.ear-admin__feature-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 26px;
+}
+
+.ear-admin__feature-top > span {
+    color: var(--feature-accent, #a52a69);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.ear-admin__feature-top b {
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #f1edf3;
+    color: #514659;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.ear-admin__location {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    margin-top: 23px;
+    padding-top: 19px;
+    border-top: 1px solid var(--ear-line);
+    color: #51475a;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.ear-admin__location .dashicons {
+    flex: 0 0 auto;
+    color: var(--feature-accent, #a52a69);
+}
+
+.ear-admin__compatibility {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 58px;
+    align-items: center;
+    padding: clamp(62px, 7vw, 96px);
+    background: #fff;
+}
+
+.ear-admin__compatibility ul {
+    display: grid;
+    gap: 11px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ear-admin__compatibility li {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin: 0;
+    padding: 13px 15px;
+    border: 1px solid var(--ear-line);
+    border-radius: 12px;
+    background: var(--ear-paper);
+    font-weight: 650;
+}
+
+.ear-admin__compatibility .dashicons {
+    color: #2e9f88;
+}
+
+.ear-admin__footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 28px;
+    align-items: center;
+    padding: 30px clamp(32px, 7vw, 96px);
+    background: #18121f;
+    color: #fff;
+}
+
+.ear-admin__footer > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px 18px;
+}
+
+.ear-admin__footer span {
+    color: #bdb4c5;
+}
+
+.ear-admin__footer a {
+    color: #a9f2ec;
+    font-weight: 700;
+}
+
+@media screen and (max-width: 960px) {
+    .ear-admin__hero,
+    .ear-admin__compatibility {
+        grid-template-columns: 1fr;
+    }
+
+    .ear-admin__hero-model {
+        max-width: 620px;
+    }
+
+    .ear-admin__promise {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+}
+
+@media screen and (max-width: 782px) {
+    .ear-admin-wrap {
+        margin-left: -10px;
+    }
+
+    .ear-admin__hero,
+    .ear-admin__section,
+    .ear-admin__compatibility {
+        padding: 44px 22px;
+    }
+
+    .ear-admin__hero {
+        gap: 36px;
+    }
+
+    .ear-admin__steps,
+    .ear-admin__feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ear-admin__promise,
+    .ear-admin__footer {
+        padding: 24px 22px;
+    }
+
+    .ear-admin__footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ear-admin__actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ear-admin__hero-model {
+        padding: 18px;
+    }
+
+    .ear-admin__hero-model span {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ear-admin__button {
+        transition: none;
+    }
+}

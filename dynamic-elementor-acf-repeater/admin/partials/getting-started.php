@@ -1,274 +1,148 @@
 <?php
 /**
- * Getting Started template for the plugin settings page.
+ * Feature guide for the plugin admin page.
  *
- * @package    Dynamic_Elementor_ACF_Repeater
- * @since      1.0.0
+ * @package DynamicElementorAcfRepeater
  */
 
-if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
+
+$is_pro          = function_exists( 'earluna_can_use_premium_code' ) && earluna_can_use_premium_code();
+$edition_label   = $is_pro ? __( 'Pro active', 'dynamic-elementor-acf-repeater' ) : __( 'Free edition', 'dynamic-elementor-acf-repeater' );
+$templates_url   = admin_url( 'edit.php?post_type=elementor_library&tabs_group=library' );
+$docs_url        = 'https://calculabs.github.io/elementor-acf-repeater-docs/';
+$support_url     = 'https://wordpress.org/support/plugin/dynamic-elementor-acf-repeater/';
+$feature_version = defined( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION' ) ? DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION : '';
+
+$features = array(
+	array(
+		'eyebrow'  => __( 'Discover rows', 'dynamic-elementor-acf-repeater' ),
+		'title'    => __( 'Search, sort, and narrow', 'dynamic-elementor-acf-repeater' ),
+		'copy'     => __( 'Offer keyword search, stable ordering, number or date ranges, and Flexible Content layout selection before final pagination.', 'dynamic-elementor-acf-repeater' ),
+		'location' => __( 'Loop Grid or Loop Carousel → Content → Row Search & Sorting', 'dynamic-elementor-acf-repeater' ),
+		'badge'    => __( 'New in 2.3', 'dynamic-elementor-acf-repeater' ),
+		'class'    => 'rose',
+	),
+	array(
+		'eyebrow'  => __( 'Filter rows', 'dynamic-elementor-acf-repeater' ),
+		'title'    => __( 'Use Elementor’s native filter', 'dynamic-elementor-acf-repeater' ),
+		'copy'     => __( 'Connect Elementor Pro’s Taxonomy Filter to repeater-row values while preserving native deep links, Load More, and numbered pagination.', 'dynamic-elementor-acf-repeater' ),
+		'location' => __( 'Taxonomy Filter → Selected Element; Loop widget → Repeater taxonomy source', 'dynamic-elementor-acf-repeater' ),
+		'badge'    => __( 'Opt in', 'dynamic-elementor-acf-repeater' ),
+		'class'    => 'mint',
+	),
+	array(
+		'eyebrow'  => __( 'Open details', 'dynamic-elementor-acf-repeater' ),
+		'title'    => __( 'Turn the Loop Item into a lightbox', 'dynamic-elementor-acf-repeater' ),
+		'copy'     => __( 'Open the exact Loop Item over the page, then choose only the overlay, close, navigation, sizing, and visibility controls you want.', 'dynamic-elementor-acf-repeater' ),
+		'location' => __( 'Loop Grid or Loop Carousel → Content → Repeater Lightbox', 'dynamic-elementor-acf-repeater' ),
+		'badge'    => __( 'Opt in', 'dynamic-elementor-acf-repeater' ),
+		'class'    => 'violet',
+	),
+	array(
+		'eyebrow'  => __( 'Keep it native', 'dynamic-elementor-acf-repeater' ),
+		'title'    => __( 'Render rows in Loop Carousel', 'dynamic-elementor-acf-repeater' ),
+		'copy'     => __( 'Keep Elementor’s arrows, bullets, breakpoints, drag, swipe, and familiar editor while every logical slide comes from a repeater row.', 'dynamic-elementor-acf-repeater' ),
+		'location' => __( 'Loop Carousel → Query → Use ACF Rows', 'dynamic-elementor-acf-repeater' ),
+		'badge'    => __( 'Pro', 'dynamic-elementor-acf-repeater' ),
+		'class'    => 'blue',
+	),
+	array(
+		'eyebrow'  => __( 'Model deeply', 'dynamic-elementor-acf-repeater' ),
+		'title'    => __( 'Groups, Flexible Content, and nested Repeaters', 'dynamic-elementor-acf-repeater' ),
+		'copy'     => __( 'Select stable field-key paths, map layouts to different Loop Items, and flatten nested rows without moving content into a replacement widget.', 'dynamic-elementor-acf-repeater' ),
+		'location' => __( 'Loop Item Page Settings → ACF Row Schema; Loop widget → ACF Row Source', 'dynamic-elementor-acf-repeater' ),
+		'badge'    => __( 'Pro', 'dynamic-elementor-acf-repeater' ),
+		'class'    => 'amber',
+	),
+	array(
+		'eyebrow'  => __( 'Curate posts', 'dynamic-elementor-acf-repeater' ),
+		'title'    => __( 'Query Relationship and Post Object paths', 'dynamic-elementor-acf-repeater' ),
+		'copy'     => __( 'Follow top-level or nested Relationship/Post Object selections, preserve editorial order, and hand the real selected posts to Elementor.', 'dynamic-elementor-acf-repeater' ),
+		'location' => __( 'Loop Grid or Loop Carousel → Query → Query Relationship Posts', 'dynamic-elementor-acf-repeater' ),
+		'badge'    => __( 'Pro', 'dynamic-elementor-acf-repeater' ),
+		'class'    => 'plum',
+	),
+);
 ?>
 
-<style>
-.dear-getting-started {
-    display: flex;
-    margin-top: 20px;
-    gap: 30px;
-}
+<main class="ear-admin">
+	<section class="ear-admin__hero">
+		<div class="ear-admin__hero-copy">
+			<div class="ear-admin__chips">
+				<span class="ear-admin__chip ear-admin__chip--edition"><?php echo esc_html( $edition_label ); ?></span>
+				<span class="ear-admin__chip"><?php echo esc_html( sprintf( __( 'Version %s', 'dynamic-elementor-acf-repeater' ), $feature_version ) ); ?></span>
+				<span class="ear-admin__chip"><?php esc_html_e( 'Everything advanced is opt in', 'dynamic-elementor-acf-repeater' ); ?></span>
+			</div>
+			<p class="ear-admin__kicker"><?php esc_html_e( 'Dynamic ACF Repeater for Elementor', 'dynamic-elementor-acf-repeater' ); ?></p>
+			<h1><?php esc_html_e( 'Your fields stay structured. Your design stays Elementor.', 'dynamic-elementor-acf-repeater' ); ?></h1>
+			<p class="ear-admin__lede"><?php esc_html_e( 'Build one native Loop Item, then let ACF Pro or Secure Custom Fields rows supply the content. Add richer behavior only where a project needs it.', 'dynamic-elementor-acf-repeater' ); ?></p>
+			<div class="ear-admin__actions">
+				<a class="ear-admin__button ear-admin__button--primary" href="<?php echo esc_url( $templates_url ); ?>"><?php esc_html_e( 'Open Elementor Templates', 'dynamic-elementor-acf-repeater' ); ?></a>
+				<a class="ear-admin__button" href="<?php echo esc_url( $docs_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Read the documentation ↗', 'dynamic-elementor-acf-repeater' ); ?></a>
+			</div>
+		</div>
+		<div class="ear-admin__hero-model" aria-hidden="true">
+			<div class="ear-admin__model-source"><small>ACF / SCF</small><strong>Repeater rows</strong><span>Structured content</span></div>
+			<i></i>
+			<div class="ear-admin__model-template"><small>Elementor</small><strong>One Loop Item</strong><span>Your design</span></div>
+			<i></i>
+			<div class="ear-admin__model-output"><small>Native</small><strong>Grid or Carousel</strong><span>Real interactions</span></div>
+		</div>
+	</section>
 
-.dear-main-content {
-    flex: 2;
-    background: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+	<section class="ear-admin__promise" aria-label="Compatibility promise">
+		<div><span class="dashicons dashicons-lock"></span><strong><?php esc_html_e( 'Nothing changes by surprise.', 'dynamic-elementor-acf-repeater' ); ?></strong></div>
+		<p><?php esc_html_e( 'Existing widgets keep their saved behavior. Advanced controls are disabled until you enable them on that specific Loop Grid or Loop Carousel. No global migration and no manufactured card markup.', 'dynamic-elementor-acf-repeater' ); ?></p>
+	</section>
 
-.dear-sidebar {
-    flex: 1;
-}
+	<section class="ear-admin__section">
+		<div class="ear-admin__section-heading">
+			<p><?php esc_html_e( 'The three-part workflow', 'dynamic-elementor-acf-repeater' ); ?></p>
+			<h2><?php esc_html_e( 'Model once. Design once. Publish anywhere.', 'dynamic-elementor-acf-repeater' ); ?></h2>
+		</div>
+		<div class="ear-admin__steps">
+			<article><span>01</span><h3><?php esc_html_e( 'Choose the row schema', 'dynamic-elementor-acf-repeater' ); ?></h3><p><?php esc_html_e( 'Create the Repeater, Flexible Content, nested, or Relationship structure your editors actually need.', 'dynamic-elementor-acf-repeater' ); ?></p></article>
+			<article><span>02</span><h3><?php esc_html_e( 'Build the Loop Item', 'dynamic-elementor-acf-repeater' ); ?></h3><p><?php esc_html_e( 'Select that schema in Page Settings, then bind ordinary Elementor widgets with repeater dynamic tags.', 'dynamic-elementor-acf-repeater' ); ?></p></article>
+			<article><span>03</span><h3><?php esc_html_e( 'Enable rows on the widget', 'dynamic-elementor-acf-repeater' ); ?></h3><p><?php esc_html_e( 'Use Elementor’s Loop Grid or Loop Carousel and turn on only the enhancements the page needs.', 'dynamic-elementor-acf-repeater' ); ?></p></article>
+		</div>
+	</section>
 
-.dear-support-box {
-    background: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
+	<section class="ear-admin__section ear-admin__section--features">
+		<div class="ear-admin__section-heading">
+			<p><?php esc_html_e( 'Pro feature guide', 'dynamic-elementor-acf-repeater' ); ?></p>
+			<h2><?php esc_html_e( 'Every enhancement has a clear switch.', 'dynamic-elementor-acf-repeater' ); ?></h2>
+			<span><?php esc_html_e( 'The location line tells you exactly where to find it in Elementor.', 'dynamic-elementor-acf-repeater' ); ?></span>
+		</div>
+		<div class="ear-admin__feature-grid">
+			<?php foreach ( $features as $feature ) : ?>
+				<article class="ear-admin__feature ear-admin__feature--<?php echo esc_attr( $feature['class'] ); ?>">
+					<div class="ear-admin__feature-top"><span><?php echo esc_html( $feature['eyebrow'] ); ?></span><b><?php echo esc_html( $feature['badge'] ); ?></b></div>
+					<h3><?php echo esc_html( $feature['title'] ); ?></h3>
+					<p><?php echo esc_html( $feature['copy'] ); ?></p>
+					<div class="ear-admin__location"><span class="dashicons dashicons-admin-settings"></span><span><?php echo esc_html( $feature['location'] ); ?></span></div>
+				</article>
+			<?php endforeach; ?>
+		</div>
+	</section>
 
-.dear-step {
-    margin-bottom: 25px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
-}
+	<section class="ear-admin__compatibility">
+		<div>
+			<p><?php esc_html_e( 'Built for the stack you already use', 'dynamic-elementor-acf-repeater' ); ?></p>
+			<h2><?php esc_html_e( 'ACF Pro or Secure Custom Fields. Elementor Pro’s native Loop widgets.', 'dynamic-elementor-acf-repeater' ); ?></h2>
+		</div>
+		<ul>
+			<li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e( 'No replacement grid or carousel widget', 'dynamic-elementor-acf-repeater' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e( 'No shortcode-driven design workflow', 'dynamic-elementor-acf-repeater' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e( 'Per-widget opt-in behavior', 'dynamic-elementor-acf-repeater' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span><?php esc_html_e( 'Responsive editor and frontend previews', 'dynamic-elementor-acf-repeater' ); ?></li>
+		</ul>
+	</section>
 
-.dear-step:last-child {
-    border-bottom: none;
-}
-
-.dear-step h4 {
-    color: #1d2327;
-    margin-bottom: 15px;
-    font-size: 1.1em;
-}
-
-.dear-step ul {
-    margin: 0;
-    padding-left: 25px;
-}
-
-.dear-step > ul {
-    border-left: 3px solid #e5e7eb;
-    list-style: none;
-}
-
-.dear-step > ul > li {
-    margin-bottom: 12px;
-    position: relative;
-}
-
-.dear-step > ul > li::before {
-    content: "•";
-    color: #2271b1;
-    position: absolute;
-    left: -15px;
-    top: 0;
-}
-
-.dear-step ul ul {
-    list-style: circle;
-    margin-top: 8px;
-}
-
-.dear-step ul ul li {
-    margin-bottom: 8px;
-    color: #50575e;
-}
-
-.dear-step strong {
-    color: #1d2327;
-    display: block;
-    margin-bottom: 4px;
-}
-
-.dear-pro-features {
-    background: #f0f6fc;
-    padding: 20px;
-    border-radius: 6px;
-    margin-top: 30px;
-}
-
-.dear-pro-features h3 {
-    color: #1d2327;
-    margin-top: 0;
-}
-
-.dear-pro-features ul {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-    margin: 0;
-}
-
-.dear-pro-features li {
-    background: #fff;
-    padding: 15px;
-    border-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-</style>
-
-<div class="dear-getting-started">
-    <div class="dear-main-content">
-        <h2><?php esc_html_e('Getting Started with Dynamic Elementor ACF Repeater', 'dynamic-elementor-acf-repeater'); ?></h2>
-        
-        <p><?php esc_html_e('This plugin allows you to display ACF repeater field content in Elementor using dynamic tags and loop grids. Follow these steps to get started:', 'dynamic-elementor-acf-repeater'); ?></p>
-
-
-        <div class="dear-step">
-            <h4><?php esc_html_e('1. Create ACF Repeater Field', 'dynamic-elementor-acf-repeater'); ?></h4>
-            <ul>
-                <li><?php esc_html_e('Create a new ACF field group', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('Add a Repeater field with your desired sub-fields (text, image, etc.)', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('Set location rules for where this field group should appear', 'dynamic-elementor-acf-repeater'); ?></li>
-            </ul>
-        </div>
-
-        <div class="dear-step">
-            <h4><?php esc_html_e('2. Populate Repeater Fields', 'dynamic-elementor-acf-repeater'); ?></h4>
-            <ul>
-                <li><?php esc_html_e('Edit a post or custom post type where your ACF Repeater field is available', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('Add entries to the repeater, filling out the sub-fields', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('Save your changes', 'dynamic-elementor-acf-repeater'); ?></li>
-            </ul>
-        </div>
-
-        <div class="dear-step">
-            <h4><?php esc_html_e('3. Create Loop Item Template', 'dynamic-elementor-acf-repeater'); ?></h4>
-            <ul>
-                <li style="color: #943b7c; font-weight: bold;"><?php esc_html_e('Before adding Dynamic Tagc Content to your elements, you must select the ACF Repeater field in the Elementor Loop Item Page Settings. Otherwise, you will not see them in the dynamic tags.', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('In Elementor, go to Templates → Add New → Loop Item', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('In Elementor Loop Item Page Settings, select your ACF Repeater field', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('Design your loop item template using ACF Repeater Dynamic Tags', 'dynamic-elementor-acf-repeater'); ?></li>
-            </ul>
-        </div>
-
-        <div class="dear-step">
-            <h4><?php esc_html_e('4. Set Up Loop Grid Widget', 'dynamic-elementor-acf-repeater'); ?></h4>
-            <ul>
-                <li><?php esc_html_e('Add a Loop Grid widget to an Elementor template', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('Select your Loop Item template in the Layout section', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('Enable "Use ACF Repeater" in Query settings', 'dynamic-elementor-acf-repeater'); ?></li>
-                <li><?php esc_html_e('Select your ACF Repeater field and configure display settings', 'dynamic-elementor-acf-repeater'); ?></li>
-            </ul>
-        </div>
-
-        <?php if (function_exists('earluna_fs') && earluna_fs()->can_use_premium_code__premium_only()): ?>
-        <div class="dear-step">
-            <h4><?php esc_html_e('5. Configure Pro Features', 'dynamic-elementor-acf-repeater'); ?></h4>
-            <ul>
-                <li>
-                    <strong><?php esc_html_e('ACF Relationship:', 'dynamic-elementor-acf-repeater'); ?></strong>
-                    <ul>
-                        <li><?php esc_html_e('In Loop Grid settings, find the "ACF Relationship" section', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Enable the ACF Relationship feature', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Select the ACF Relationship field to use', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Choose how to display related content in your loop items', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Customize the query to filter or sort related posts as needed', 'dynamic-elementor-acf-repeater'); ?></li>
-                    </ul>
-                </li>
-                <li>
-                    <strong><?php esc_html_e('Lightbox:', 'dynamic-elementor-acf-repeater'); ?></strong>
-                    <ul>
-                        <li><?php esc_html_e('In Loop Grid settings, find the "Repeaer Lightbox" section', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Enable the lightbox feature', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Customize lightbox settings as needed', 'dynamic-elementor-acf-repeater'); ?></li>
-                    </ul>
-                </li>
-                <li>
-                    <strong><?php esc_html_e('Lightbox Visibility:', 'dynamic-elementor-acf-repeater'); ?></strong>
-                    <ul>
-                        <li><?php esc_html_e('For elements with ACF Repeater Dynamic Tags, a "Lightbox Visibility" control is available', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Options include:', 'dynamic-elementor-acf-repeater'); ?>
-                            <ul>
-                                <li><?php esc_html_e('Default: Element is visible in both loop and lightbox', 'dynamic-elementor-acf-repeater'); ?></li>
-                                <li><?php esc_html_e('Hide in Lightbox: Element is hidden when viewed in the lightbox', 'dynamic-elementor-acf-repeater'); ?></li>
-                                <li><?php esc_html_e('Show Only in Lightbox: Element is hidden in the loop but visible in the lightbox', 'dynamic-elementor-acf-repeater'); ?></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                    <strong><?php esc_html_e('Swiper Integration:', 'dynamic-elementor-acf-repeater'); ?></strong>
-                    <ul>
-                        <li><?php esc_html_e('In Loop Grid settings, locate the "Slider" section', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Enable the slider feature', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Adjust slider settings to your preferences', 'dynamic-elementor-acf-repeater'); ?></li>
-                    </ul>
-                </li>
-                <li>
-                    <strong><?php esc_html_e('Filtering:', 'dynamic-elementor-acf-repeater'); ?></strong>
-                    <ul>
-                        <li><?php esc_html_e('In Loop Grid settings, find the "Repeater Filter" section', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Enable filtering', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Choose the ACF field to use for filtering', 'dynamic-elementor-acf-repeater'); ?></li>
-                        <li><?php esc_html_e('Customize filter appearance and behavior', 'dynamic-elementor-acf-repeater'); ?></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-        <?php else: ?>
-        <div class="dear-pro-features">
-            <h3><?php esc_html_e('Pro Features', 'dynamic-elementor-acf-repeater'); ?></h3>
-            <ul>
-            <li>
-                    <strong><?php esc_html_e('Enable Lightbox Functionality', 'dynamic-elementor-acf-repeater'); ?></strong><br>
-                    <?php esc_html_e('Transform your repeater loop grid content with an elegant lightbox display', 'dynamic-elementor-acf-repeater'); ?>
-                </li>
-                <li>
-                    <strong><?php esc_html_e('Advanced Swiper Integration', 'dynamic-elementor-acf-repeater'); ?></strong><br>
-                    <?php esc_html_e('Create stunning carousel experiences with smooth swiper navigation', 'dynamic-elementor-acf-repeater'); ?>
-                </li>
-                <li>
-                    <strong><?php esc_html_e('Advanced Field Support', 'dynamic-elementor-acf-repeater'); ?></strong><br>
-                    <?php esc_html_e('Use file, gallery, and relationship fields in your repeaters', 'dynamic-elementor-acf-repeater'); ?>
-                </li>
-                <li>
-                    <strong><?php esc_html_e('Advanced Filtering', 'dynamic-elementor-acf-repeater'); ?></strong><br>
-                    <?php esc_html_e('Add dynamic filters to your loop grid content', 'dynamic-elementor-acf-repeater'); ?>
-                </li>
-                <li>
-                    <strong><?php esc_html_e('Visibility Control', 'dynamic-elementor-acf-repeater'); ?></strong><br>
-                    <?php esc_html_e('Control element visibility in grid vs lightbox views', 'dynamic-elementor-acf-repeater'); ?>
-                </li>
-                <li>
-                    <strong><?php esc_html_e('Relationship Fields Query', 'dynamic-elementor-acf-repeater'); ?></strong><br>
-                    <?php esc_html_e('Display related content from across your site', 'dynamic-elementor-acf-repeater'); ?>
-                </li>
-            </ul>
-        </div>
-        <?php endif; ?>
-    </div>
-
-    <div class="dear-sidebar">
-        <div class="dear-support-box">
-            <h3><?php esc_html_e('Need Help?', 'dynamic-elementor-acf-repeater'); ?></h3>
-            <p><?php esc_html_e('Check out these resources:', 'dynamic-elementor-acf-repeater'); ?></p>
-            <ul>
-                <li><a href="https://wordpress.org/support/plugin/dynamic-elementor-acf-repeater/" target="_blank"><?php esc_html_e('Support Forum', 'dynamic-elementor-acf-repeater'); ?></a></li>
-                <li><a href="https://calculabs.github.io/elementor-acf-repeater-docs" target="_blank"><?php esc_html_e('Documentation', 'dynamic-elementor-acf-repeater'); ?></a></li>
-            </ul>
-        </div>
-
-        <?php if (function_exists('earluna_fs') && !earluna_fs()->can_use_premium_code__premium_only()): ?>
-        <div class="dear-support-box">
-            <h3><?php esc_html_e('Upgrade to Pro', 'dynamic-elementor-acf-repeater'); ?></h3>
-            <p><?php esc_html_e('Get access to all premium features and priority support.', 'dynamic-elementor-acf-repeater'); ?></p>
-            <p><a href="<?php echo esc_url(earluna_fs()->get_upgrade_url()); ?>" class="button button-primary"><?php esc_html_e('Upgrade Now', 'dynamic-elementor-acf-repeater'); ?></a></p>
-        </div>
-        <?php endif; ?>
-    </div>
-</div> 
+	<footer class="ear-admin__footer">
+		<div><strong><?php esc_html_e( 'Need a hand?', 'dynamic-elementor-acf-repeater' ); ?></strong><span><?php esc_html_e( 'Start with the docs, then bring a reproducible example to support.', 'dynamic-elementor-acf-repeater' ); ?></span></div>
+		<div><a href="<?php echo esc_url( $docs_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Documentation', 'dynamic-elementor-acf-repeater' ); ?></a><a href="<?php echo esc_url( $support_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Support forum', 'dynamic-elementor-acf-repeater' ); ?></a></div>
+	</footer>
+</main>

@@ -57,7 +57,7 @@ class DynamicTagControls {
                             '<div class="notice notice-error"><p>%s</p></div>',
                             esc_html(sprintf(
                                 /* translators: %s: Error message */
-                                __('Dynamic Elementor ACF Repeater: Error registering tags - %s', 'dynamic-elementor-acf-repeater'),
+                                __('Dynamic ACF Repeater for Elementor: Error registering tags - %s', 'dynamic-elementor-acf-repeater'),
                                 $e->getMessage()
                             ))
                         );
@@ -122,7 +122,7 @@ class DynamicTagControls {
                             '<div class="notice notice-error"><p>%s</p></div>',
                             esc_html(sprintf(
                                 /* translators: %s: Error message */
-                                __('Dynamic Elementor ACF Repeater: Error registering controls - %s', 'dynamic-elementor-acf-repeater'),
+                                __('Dynamic ACF Repeater for Elementor: Error registering controls - %s', 'dynamic-elementor-acf-repeater'),
                                 $e->getMessage()
                             ))
                         );

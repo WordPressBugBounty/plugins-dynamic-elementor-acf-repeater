@@ -1,14 +1,14 @@
-=== Dynamic Elementor ACF Repeater ===
+=== Dynamic ACF Repeater for Elementor ===
 Contributors: wplunadev
 Tags: elementor, loop grid, repeater fields, acf repeater, dynamic tags
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Allows ACF repeater field values to be rendered in Elementor loop items and loop grids via Dynamic Tags.
+Renders ACF or Secure Custom Fields repeater values in Elementor loop items and loop grids via Dynamic Tags.
 
 == Requirements ==
 
@@ -20,19 +20,19 @@ This plugin requires the following:
 * Elementor Pro 3.8 or higher for Loop Grid/Loop Carousel features
 * Secure Custom Fields or Advanced Custom Fields Pro with Repeater/Flexible Content field support
 
-Please ensure you have these plugins installed and activated before using Dynamic Elementor ACF Repeater.
+Please ensure you have these plugins installed and activated before using Dynamic ACF Repeater for Elementor.
 
 = Compatibility boundary =
 
-Version 2.1.0 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
+Version 2.4.0 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
 
 Automatic context resolves Elementor's configured preview post, queried term or author objects, the current post, and the ACF Options page fallback. Free users can also select Current Post, Queried Object, or Options directly. Pro adds Current User and explicit post, user, taxonomy-term, or Options object IDs.
 
-The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.1.0 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
+The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.4.0 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
 
 == Description ==
 
-Dynamic Elementor ACF Repeater is a powerful plugin that bridges the gap between Advanced Custom Fields (ACF) repeater fields and Elementor's dynamic content capabilities. It allows you to use ACF repeater field values directly in Elementor Loop Items and Loop Grids through Dynamic Tags.
+Dynamic ACF Repeater for Elementor is a powerful plugin that bridges the gap between Advanced Custom Fields (ACF) repeater fields and Elementor's dynamic content capabilities. It allows you to use ACF repeater field values directly in Elementor Loop Items and Loop Grids through Dynamic Tags.
 
 == Usage Guide ==
 
@@ -40,11 +40,11 @@ Dynamic Elementor ACF Repeater is a powerful plugin that bridges the gap between
 
 == Free vs Pro Features ==
 
-Dynamic Elementor ACF Repeater comes in two versions: Free and Pro. Here's a breakdown of what each version offers:
+Dynamic ACF Repeater for Elementor comes in two versions: Free and Pro. Here's a breakdown of what each version offers:
 
 = Free Version =
 
-The free version of Dynamic Elementor ACF Repeater provides essential functionality for integrating ACF repeater fields with Elementor:
+The free version of Dynamic ACF Repeater for Elementor provides essential functionality for integrating ACF repeater fields with Elementor:
 
 * Basic integration with Elementor Pro and Secure Custom Fields or ACF Pro
 * Support for image and text repeater fields in Elementor dynamic tags for loop items and loop grid
@@ -53,6 +53,7 @@ The free version of Dynamic Elementor ACF Repeater provides essential functional
 * Loop Grid widget integration
 * Support for repeater fields on ACF Options page
 * Automatic, current-post, queried-object, and Options context selection
+* Optional editor-only Context Inspector for resolved provider, object context, row source, row count, and representative-row metadata
 
 = Pro Version =
 
@@ -75,12 +76,17 @@ The Pro version includes everything in the free version, plus a host of advanced
 * Enhanced responsive filter styling controls
 * Lightbox visibility control for individual elements (show or hide individual items in the lightbox vs the grid)
 * ACF Relationship field support for dynamic content associations across posts
-* Nested Relationship/Post Object fields: Support for relationship fields inside repeaters (select via repeater:subfield)
+* Stable Relationship/Post Object field-key paths through Groups, Flexible Content layouts, nested Repeaters, and mixed container combinations
 * Loop Carousel support
 * Current-user and explicit ACF object context selection
 * True nested Repeater row sources through Repeater, Flexible Content, and Group field paths
 * Flexible Content layout-to-Loop-template mapping for Loop Grid and Loop Carousel
 * Per-layout row schemas and representative values while editing mapped Loop Item templates
+* Opt-in row search across selected scalar fields, with tokenized matching before pagination
+* Stable text, number, and date sorting with deterministic missing-value handling
+* Number and date range filters plus Flexible Content layout filtering
+* Isolated, optional URL state for multiple independently controlled grids or carousels
+* Expanded Context Inspector details for stable field paths, Flexible Content mappings, Relationship/Post Object counts, row-query state, filtering, pagination, and signed refresh security
 * Element Display Conditions: ACF Repeater Field condition (show/hide by repeater sub‑field)
 * New Dynamic Tags (PRO): ACF Repeater Link Title, ACF Repeater Link Target, ACF Repeater Color, ACF Repeater Icon
 * Enhanced URL support (PRO): ACF Link field now maps to URL/Title/Target
@@ -88,7 +94,7 @@ The Pro version includes everything in the free version, plus a host of advanced
 
 = Upgrade to Pro =
 
-Unlock the full potential of Dynamic Elementor ACF Repeater and take your dynamic content creation to the next level!
+Unlock the full potential of Dynamic ACF Repeater for Elementor and take your dynamic content creation to the next level!
 
 [Start Your Free Trial](https://checkout.freemius.com/mode/dialog/plugin/16334/plan/27245/?trial=paid)
 
@@ -118,6 +124,63 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 == Changelog ==
 
+= 2.4.0 =
+
+* Editor-only Context Inspector
+  - Added an opt-in Troubleshooting panel to Elementor Loop Grid and Loop Carousel widgets that use ACF or Secure Custom Fields rows.
+  - Reports the resolved field provider, object context, row source, row count, and representative-row metadata without exposing row values.
+  - Pro also reports stable source paths, Flexible Content template mappings, Relationship/Post Object paths and counts, row search/sort state, filtering, pagination, and public-refresh security.
+* Privacy, security, and compatibility
+  - Keeps the inspector disabled by default and sends no request until it is enabled on the current widget.
+  - Requires an authenticated nonce plus permission to edit the active Elementor document and accepts only a strict settings allowlist.
+  - Adds no inspector markup, buttons, styles, or visual changes to the preview canvas or frontend.
+  - Adds no setting renames, removals, automatic migrations, or behavior changes to existing widgets.
+* Validation
+  - Added metadata-leakage, provider, context, Options fallback, all-posts, Flexible Content, row-query, and Relationship/Post Object unit coverage.
+  - Added real Elementor Loop Grid and Loop Carousel browser coverage for default-off behavior, context resolution, AJAX results, toggle cycling, visual quality, and zero canvas/frontend output.
+
+= 2.3.0 =
+
+* Row discovery controls (Pro)
+  - Added opt-in search across selected scalar Repeater or Flexible Content row fields.
+  - Added stable text, number, and date sort options with configurable labels and default direction.
+  - Added number/date minimum and maximum filters plus Flexible Content layout filtering.
+  - Added isolated, optional URL state and support for multiple independently controlled Loop Grids or Loop Carousels.
+* Compatibility and behavior
+  - Applied taxonomy filtering, row search, ranges, and sorting before one final pagination step.
+  - Kept every new control disabled by default; no existing widget settings or Loop Item markup are changed.
+  - Added Elementor Style controls for the opt-in public control group.
+* Validation
+  - Added unit coverage for field discovery, Group paths, search, stable sorting, ranges, invalid bounds, layout filtering, widget isolation, and taxonomy-filter composition.
+  - Added isolated browser coverage for state transport, stale-request cancellation, URL isolation, and 500-row response performance.
+
+= 2.2.1 =
+
+* Elementor editor compatibility (Pro)
+  - Fixed an HTTP 500 while Elementor generated its global Loop Grid and Loop Carousel control configuration.
+  - Stopped reading instance settings while Elementor is still constructing the widget control schema.
+  - Kept legacy Relationship/Post Object selectors editable through clearly labelled compatibility options, with no saved-setting migration.
+* Validation
+  - Added unit coverage for prototype-safe Relationship control options.
+  - Added real Elementor editor coverage for a six-row Repeater Loop Carousel.
+
+= 2.2.0 =
+
+* Product name
+  - Renamed the customer-facing product to Dynamic ACF Repeater for Elementor, following Elementor's trademark guidance.
+  - Preserved the existing plugin folder, main file, WordPress.org slug, text domain, Freemius identity, saved settings, and internal identifiers so updates remain backward-compatible.
+* Deep Relationship/Post Object queries (Pro)
+  - Added stable field-key paths through Groups, Flexible Content layouts, nested Repeaters, and mixed container combinations.
+  - Flattened posts selected across multiple nested rows, removed duplicates, and preserved the first configured occurrence and field order.
+  - Added Relationship query controls to Loop Carousel as well as Loop Grid.
+* Backward compatibility
+  - Preserved existing top-level field-name and `repeater:subfield` settings without automatic migrations.
+  - Kept legacy saved selectors visible while editing existing widgets without offering name-based paths to new widgets.
+  - Added no frontend controls, panels, or visual markup.
+* Validation
+  - Added unit coverage for top-level, Group, Flexible Content, Repeater, mixed-container, layout-isolation, empty, duplicate, ID, object, and legacy-selector cases.
+  - Added a polished LocalWP Relationship showcase plus frontend, editor, desktop, and mobile browser coverage.
+
 = 2.1.0 =
 
 * Elementor native taxonomy filtering (Pro)
@@ -126,7 +189,7 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
   - Limited native filter term choices to terms used by the configured current-object rows when empty terms are hidden.
   - Applied row filtering before pagination so matches from later pages remain available.
 * Backward compatibility
-  - Kept the existing DEAR custom filter, saved controls, URL parameters, and frontend markup unchanged when native support is not enabled.
+  - Kept the existing built-in custom filter, saved controls, URL parameters, and frontend markup unchanged when native support is not enabled.
   - Made native support explicitly opt-in and mutually exclusive with the existing custom filter for each Loop Grid.
   - Added no setting renames, removals, or automatic migrations.
 * Validation
@@ -299,7 +362,7 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 
 = 1.0.0 =
-* Initial release of Dynamic Elementor ACF Repeater
+* Initial release of Dynamic ACF Repeater for Elementor
 * Basic integration with Elementor Pro and ACF Pro
 * Support for image and text repeater fields in Elementor dynamic tags for loop items and loop grid
 * ACF Repeater Text and ACF Repeater Image dynamic tags

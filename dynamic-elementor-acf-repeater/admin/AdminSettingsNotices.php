@@ -17,7 +17,7 @@ class AdminSettingsNotices {
 	}
 
 	public static function enqueue_plugin_update_notice_styles( $hook_suffix ) {
-		if ( 'plugins.php' !== $hook_suffix ) {
+		if ( 'plugins.php' !== $hook_suffix && false === strpos( $hook_suffix, 'dynamic-elementor-acf-repeater' ) ) {
 			return;
 		}
 
@@ -69,22 +69,22 @@ class AdminSettingsNotices {
 
 	public static function admin_notice_acf_missing() {
 		/* translators: %s: Plugin name */
-		$message = __( 'Dynamic Elementor ACF Repeater requires Secure Custom Fields or Advanced Custom Fields Pro to be installed and active.', 'dynamic-elementor-acf-repeater' );
+		$message = __( 'Dynamic ACF Repeater for Elementor requires Secure Custom Fields or Advanced Custom Fields Pro to be installed and active.', 'dynamic-elementor-acf-repeater' );
 		self::render_admin_notice( $message, 'error' );
 	}
 
 	public static function admin_notice_acf_pro_missing() {
-		$message = __( 'Dynamic Elementor ACF Repeater is active, but repeater fields require Secure Custom Fields or Advanced Custom Fields Pro.', 'dynamic-elementor-acf-repeater' );
+		$message = __( 'Dynamic ACF Repeater for Elementor is active, but repeater fields require Secure Custom Fields or Advanced Custom Fields Pro.', 'dynamic-elementor-acf-repeater' );
 		self::render_admin_notice( $message, 'warning' );
 	}
 
 	public static function admin_notice_elementor_pro_missing() {
-		$message = __( 'Dynamic Elementor ACF Repeater is active, but Loop Grid functionality requires Elementor Pro 3.8 or newer.', 'dynamic-elementor-acf-repeater' );
+		$message = __( 'Dynamic ACF Repeater for Elementor is active, but Loop Grid functionality requires Elementor Pro 3.8 or newer.', 'dynamic-elementor-acf-repeater' );
 		self::render_admin_notice( $message, 'warning' );
 	}
 
 	public static function admin_notice_freemius_missing() {
-		$message = __( 'Dynamic Elementor ACF Repeater could not load its licensing SDK. Premium features are disabled; reinstall the plugin package to restore the bundled SDK.', 'dynamic-elementor-acf-repeater' );
+		$message = __( 'Dynamic ACF Repeater for Elementor could not load its licensing SDK. Premium features are disabled; reinstall the plugin package to restore the bundled SDK.', 'dynamic-elementor-acf-repeater' );
 		self::render_admin_notice( $message, 'error' );
 	}
 
@@ -96,7 +96,7 @@ class AdminSettingsNotices {
 		$message = sprintf(
 			/* translators: %1$s: Plugin name, %2$s: Required plugin name */
 			esc_html__( '"%1$s" requires "%2$s" to be installed and activated.', 'dynamic-elementor-acf-repeater' ),
-			'<strong>' . esc_html__( 'Dynamic Elementor ACF Repeater', 'dynamic-elementor-acf-repeater' ) . '</strong>',
+			'<strong>' . esc_html__( 'Dynamic ACF Repeater for Elementor', 'dynamic-elementor-acf-repeater' ) . '</strong>',
 			'<strong>' . esc_html__( 'Elementor', 'dynamic-elementor-acf-repeater' ) . '</strong>'
 		);
 
@@ -111,7 +111,7 @@ class AdminSettingsNotices {
 		$message = sprintf(
 			/* translators: %1$s: Plugin name, %2$s: Required plugin name, %3$s: Required version number */
 			esc_html__( '"%1$s" requires "%2$s" version %3$s or greater.', 'dynamic-elementor-acf-repeater' ),
-			'<strong>' . esc_html__( 'Dynamic Elementor ACF Repeater', 'dynamic-elementor-acf-repeater' ) . '</strong>',
+			'<strong>' . esc_html__( 'Dynamic ACF Repeater for Elementor', 'dynamic-elementor-acf-repeater' ) . '</strong>',
 			'<strong>' . esc_html__( 'Elementor', 'dynamic-elementor-acf-repeater' ) . '</strong>',
 			DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_VERSION
 		);
@@ -127,7 +127,7 @@ class AdminSettingsNotices {
 		$message = sprintf(
 			/* translators: %1$s: Plugin name, %2$s: Required plugin name, %3$s: Required version number */
 			esc_html__( '"%1$s" requires "%2$s" version %3$s or greater.', 'dynamic-elementor-acf-repeater' ),
-			'<strong>' . esc_html__( 'Dynamic Elementor ACF Repeater', 'dynamic-elementor-acf-repeater' ) . '</strong>',
+			'<strong>' . esc_html__( 'Dynamic ACF Repeater for Elementor', 'dynamic-elementor-acf-repeater' ) . '</strong>',
 			'<strong>' . esc_html__( 'PHP', 'dynamic-elementor-acf-repeater' ) . '</strong>',
 			DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_PHP_VERSION
 		);
@@ -145,7 +145,7 @@ class AdminSettingsNotices {
 
 		$message = sprintf(
 			/* translators: %s: Upgrade Now button HTML */
-			esc_html__( 'Upgrade to Dynamic Elementor ACF Repeater Pro for advanced features! %s', 'dynamic-elementor-acf-repeater' ),
+			esc_html__( 'Upgrade to Dynamic ACF Repeater for Elementor Pro for advanced features! %s', 'dynamic-elementor-acf-repeater' ),
 			'<a href="' . esc_url( earluna_fs()->get_upgrade_url() ) . '" class="button button-primary">' . __( 'Upgrade Now', 'dynamic-elementor-acf-repeater' ) . '</a>'
 		);
 
@@ -163,6 +163,12 @@ class AdminSettingsNotices {
 	}
 
 	public static function add_plugin_action_links( $actions ) {
+		$actions['feature-guide'] = sprintf(
+			'<a href="%1$s">%2$s</a>',
+			esc_url( admin_url( 'admin.php?page=dynamic-elementor-acf-repeater' ) ),
+			esc_html__( 'Feature Guide', 'dynamic-elementor-acf-repeater' )
+		);
+
 		if ( function_exists( 'earluna_fs' ) && ! earluna_fs()->can_use_premium_code__premium_only() ) {
 			$style = 'font-weight: bold; color: #a19f00;';
 			/**
@@ -193,8 +199,8 @@ class AdminSettingsNotices {
 		// Add our plugin as a submenu
 		add_submenu_page(
 			'wp-luna',  // Parent slug
-			__( 'Dynamic Elementor ACF Repeater', 'dynamic-elementor-acf-repeater' ),
-			__( 'Dynamic Elementor ACF Repeater', 'dynamic-elementor-acf-repeater' ),
+			__( 'Dynamic ACF Repeater for Elementor', 'dynamic-elementor-acf-repeater' ),
+			__( 'Dynamic ACF Repeater for Elementor', 'dynamic-elementor-acf-repeater' ),
 			'manage_options',
 			'dynamic-elementor-acf-repeater',
 			array( self::class, 'render_settings_page' )
@@ -208,10 +214,9 @@ class AdminSettingsNotices {
 
 	public static function render_settings_page() {
 		?>
-		<div class="wrap">
-			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+		<div class="wrap ear-admin-wrap">
+			<h1 class="screen-reader-text"><?php esc_html_e( 'Dynamic ACF Repeater for Elementor', 'dynamic-elementor-acf-repeater' ); ?></h1>
 			<?php
-			// Include the getting started template
 			$template_path = plugin_dir_path( __DIR__ ) . 'admin/partials/getting-started.php';
 			if ( file_exists( $template_path ) ) {
 				include_once $template_path;

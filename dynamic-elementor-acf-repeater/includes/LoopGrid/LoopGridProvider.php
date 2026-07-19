@@ -3,6 +3,7 @@
 namespace DynamicElementorAcfRepeater\LoopGrid;
 
 use DynamicElementorAcfRepeater\Controls\LoopGridControlsBase;
+use DynamicElementorAcfRepeater\Controls\ContextInspectorControls;
 use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Support\ContextResolver;
 use DynamicElementorAcfRepeater\Support\VirtualRowContext;
@@ -12,6 +13,7 @@ class LoopGridProvider {
 	protected $mastermind;
 	protected $controls;
 	protected $context_resolver;
+	protected $context_inspector;
 
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -30,6 +32,8 @@ class LoopGridProvider {
 		$this->context_resolver = new ContextResolver();
 		$this->init_controls();
 		$this->register_controls();
+		$this->context_inspector = new ContextInspectorControls( $this, earluna_can_use_premium_code() );
+		$this->context_inspector->register();
 
 		// Add filter for virtual post classes
 		add_filter( 'post_class', array( $this, 'add_virtual_post_classes' ), 10, 3 );
@@ -225,14 +229,76 @@ class LoopGridProvider {
 	}
 
 	/**
+	 * Return editor-safe row-source diagnostics without exposing row values.
+	 *
+	 * @param array<string, mixed> $settings Loop widget settings.
+	 * @return array<string, mixed>
+	 */
+	public function inspect_row_source_settings( $settings ) {
+		$settings     = is_array( $settings ) ? $settings : array();
+		$field        = isset( $settings['acf_repeater_field'] ) ? (string) $settings['acf_repeater_field'] : '';
+		$current_only = isset( $settings['query_current_post_only'] ) ? $settings['query_current_post_only'] : 'yes';
+		$requested    = isset( $settings[ ContextResolver::SETTING_TYPE ] ) ? sanitize_key( $settings[ ContextResolver::SETTING_TYPE ] ) : 'auto';
+		$direct       = 'yes' === $current_only || 'auto' !== $requested;
+		$context      = $this->get_context_resolver()->resolve( $settings );
+		$result       = array(
+			'mode'           => $direct ? 'direct' : 'all_posts',
+			'context'        => $context,
+			'active_context' => $context,
+			'row_count'      => null,
+			'fallback'       => false,
+			'sample'         => array(),
+		);
+
+		if ( ! $direct || '' === $field ) {
+			return $result;
+		}
+
+		$source_id = isset( $context['acf_object_id'] ) ? $context['acf_object_id'] : '';
+		$rows      = '' !== (string) $source_id ? $this->resolve_row_source_rows( $field, $source_id ) : array();
+
+		if ( empty( $rows ) && 'auto' === $requested && 'options' !== $source_id ) {
+			$options_rows = $this->resolve_row_source_rows( $field, 'options' );
+			if ( ! empty( $options_rows ) ) {
+				$rows                     = $options_rows;
+				$result['fallback']       = true;
+				$result['active_context'] = array(
+					'requested'     => 'auto',
+					'type'          => 'options',
+					'acf_object_id' => 'options',
+					'object_id'     => 'options',
+					'label'         => __( 'Options page (automatic fallback)', 'dynamic-elementor-acf-repeater' ),
+					'reason'        => '',
+				);
+			}
+		}
+
+		$result['row_count'] = count( $rows );
+		if ( ! empty( $rows[0] ) && is_array( $rows[0] ) ) {
+			$sample           = $rows[0];
+			$row_path         = isset( $sample['row_path'] ) && is_array( $sample['row_path'] ) ? $sample['row_path'] : array();
+			$last             = $row_path ? end( $row_path ) : array();
+			$result['sample'] = array(
+				'index'           => is_array( $last ) && isset( $last['index'] ) ? absint( $last['index'] ) : 0,
+				'row_type'        => isset( $sample['row_type'] ) ? sanitize_key( $sample['row_type'] ) : 'repeater',
+				'layout'          => isset( $sample['layout'] ) ? sanitize_key( $sample['layout'] ) : '',
+				'schema_selector' => isset( $sample['schema_selector'] ) ? (string) $sample['schema_selector'] : '',
+			);
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Premium taxonomy filters run after row expansion. Defer pagination in
 	 * that case so matching rows on later unfiltered pages are not discarded.
 	 */
 	private function prepare_virtual_posts_for_output( $virtual_posts, $query ) {
 		$has_custom_filter = ! empty( $query->get( 'earluna_filter_terms' ) ) && ! empty( $query->get( 'earluna_repeater_taxonomy_field' ) );
 		$has_native_filter = ! empty( $query->get( 'earluna_elementor_tax_query' ) );
+		$has_row_query     = ! empty( $query->get( 'earluna_row_query' ) );
 
-		if ( $has_custom_filter || $has_native_filter ) {
+		if ( $has_custom_filter || $has_native_filter || $has_row_query ) {
 			return $virtual_posts;
 		}
 
