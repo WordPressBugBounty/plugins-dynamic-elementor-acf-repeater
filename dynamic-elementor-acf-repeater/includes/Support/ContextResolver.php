@@ -95,6 +95,9 @@ final class ContextResolver {
 		if ( $preview_id ) {
 			return $this->resolve_post( $preview_id, 'auto' );
 		}
+		if ( 'post' === $queried['type'] ) {
+			return $queried;
+		}
 
 		$post_id = get_the_ID();
 		if ( $post_id ) {
@@ -197,7 +200,18 @@ final class ContextResolver {
 			return 0;
 		}
 
-		$document = \Elementor\Plugin::$instance->documents->get_current();
+		$plugin          = \Elementor\Plugin::$instance;
+		$is_edit_mode    = isset( $plugin->editor ) && method_exists( $plugin->editor, 'is_edit_mode' ) && $plugin->editor->is_edit_mode();
+		$is_preview_mode = isset( $plugin->preview ) && method_exists( $plugin->preview, 'is_preview_mode' ) && $plugin->preview->is_preview_mode();
+
+		// A Loop Item's Preview Post is an editor aid. On a normal frontend
+		// request the queried post owns the repeater, even while Elementor's
+		// current document is the Loop Item and carries saved preview settings.
+		if ( ! $is_edit_mode && ! $is_preview_mode ) {
+			return 0;
+		}
+
+		$document = $plugin->documents->get_current();
 		if ( ! $document || ! method_exists( $document, 'get_settings' ) ) {
 			return 0;
 		}

@@ -4,7 +4,7 @@ Tags: elementor, loop grid, repeater fields, acf repeater, dynamic tags
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.4.4
+Stable tag: 2.4.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,11 +24,11 @@ Please ensure you have these plugins installed and activated before using Dynami
 
 = Compatibility boundary =
 
-Version 2.4.4 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
+Version 2.4.5 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
 
 Automatic context resolves Elementor's configured preview post, queried term or author objects, the current post, and the ACF Options page fallback. Free users can also select Current Post, Queried Object, or Options directly. Pro adds Current User and explicit post, user, taxonomy-term, or Options object IDs.
 
-The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.4.4 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
+The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.4.5 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
 
 == Description ==
 
@@ -123,6 +123,14 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 
 == Changelog ==
+
+= 2.4.5 =
+
+* Frontend context isolation
+  - Fixed Automatic context using a Loop Item's saved Preview Post on normal frontend requests instead of the actual queried post.
+  - Limited saved Elementor Preview Post resolution to Elementor edit and preview modes.
+* Compatibility
+  - Loop Item editor previews continue to use their selected sample post, while frontend Loop Grids and Loop Carousels use each viewed post's own rows.
 
 = 2.4.4 =
 
