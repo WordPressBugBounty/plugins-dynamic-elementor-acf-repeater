@@ -42,8 +42,31 @@ trait RepeaterDataTrait {
 			return $this->get_row_field_value( $post->acf_repeater_data, $field_object );
 		}
 
-		// Get document once and reuse it
+		// Get document once and reuse it.
 		$document = \Elementor\Plugin::$instance->documents->get_current();
+
+		// Elementor's editor-side dynamic-tag request renders tags against the
+		// Loop Item document ID, rather than the post selected for preview. The
+		// verified editor_post_id request constant lets us recover that Loop
+		// document and its selected preview object without changing the context
+		// of any other dynamic tag.
+		if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() && isset( $_REQUEST['action'], $_REQUEST['editor_post_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Elementor verifies its AJAX nonce before rendering dynamic tags.
+			$ajax_action        = sanitize_key( wp_unslash( $_REQUEST['action'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$editor_document_id = absint( wp_unslash( $_REQUEST['editor_post_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			if ( 'elementor_ajax' === $ajax_action && $editor_document_id && current_user_can( 'edit_post', $editor_document_id ) ) {
+				$editor_document = \Elementor\Plugin::$instance->documents->get_doc_or_auto_save( $editor_document_id, get_current_user_id() );
+
+				if ( $editor_document instanceof \ElementorPro\Modules\LoopBuilder\Documents\Loop ) {
+					$document          = $editor_document;
+					$document_settings = $document->get_settings();
+
+					if ( ! empty( $document_settings['preview_id'] ) ) {
+						$post_id = absint( $document_settings['preview_id'] );
+					}
+				}
+			}
+		}
 
 		// Default index (matching the original get_current_item_index behavior)
 		$current_index = ( $document instanceof \ElementorPro\Modules\LoopBuilder\Documents\Loop )

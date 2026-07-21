@@ -9,12 +9,11 @@
 
         bindEvents: function() {
             $(document).on('change', '#elementor-panel-page-settings-controls [data-setting="earluna_loop_repeater_field"]', this.onRepeaterFieldChange.bind(this));
-            elementor.channels.editor.on('change:earluna_loop_repeater_field', this.onRepeaterFieldChange.bind(this));
         },
 
         onRepeaterFieldChange: function(e) {
             var selectedRepeater = e.target ? $(e.target).val() : e;
-            this.updateDynamicTagControls(selectedRepeater);
+            this.updateDynamicTagControls(selectedRepeater, true);
         },
 
         initializeRepeaterField: function() {
@@ -59,7 +58,7 @@
             });
         },
 
-        updateDynamicTagControls: function(selectedRepeater) {
+        updateDynamicTagControls: function(selectedRepeater, refreshPreview) {
             try {
                 var postId = elementor.config.document.id;
                         
@@ -100,9 +99,14 @@
                         } else {
                             console.error('Failed to update dynamic tag controls:', response);
                         }
+
+                        if (refreshPreview) {
+                            DEARControlUpdater.refreshPreview(repeaterKey);
+                        }
                     },
                     error: function(xhr, status, error) {
                         console.error('AJAX error:', status, error);
+                        DEARControlUpdater.lastSelectedRepeater = null;
                     }
                 });
             } catch (error) {
@@ -151,14 +155,50 @@
                 console.warn('Unable to update dynamic tags configuration');
             }
 
+            if (typeof elementor.dynamicTags.cleanCache === 'function') {
+                elementor.dynamicTags.cleanCache();
+            }
 
             elementor.channels.editor.trigger('change:dynamic');
+        },
 
-            if (elementor.getPreviewView && typeof elementor.getPreviewView().renderOnChange === 'function') {
-                elementor.getPreviewView().renderOnChange();
-            } else {
-                console.warn('Unable to force update of controls, Elementor structure not as expected');
+        refreshPreview: function(selectedRepeater) {
+            if (typeof $e === 'undefined' || typeof $e.run !== 'function') {
+                console.warn('Unable to save the Loop Item before refreshing its preview');
+                return;
             }
+
+            var currentDocument = elementor.documents && elementor.documents.getCurrent ? elementor.documents.getCurrent() : null;
+            var container = currentDocument ? currentDocument.container : null;
+            var settingPromise = Promise.resolve();
+
+            if (container && container.settings && container.settings.get('earluna_loop_repeater_field') !== selectedRepeater) {
+                settingPromise = $e.run('document/elements/settings', {
+                    container: container,
+                    settings: {
+                        earluna_loop_repeater_field: selectedRepeater
+                    }
+                });
+            }
+
+            settingPromise.then(function() {
+                return $e.run('document/save/auto', { force: true });
+            }).then(function() {
+                if (!elementor.reloadPreview || typeof elementor.reloadPreview !== 'function') {
+                    console.warn('Unable to refresh the Loop Item preview');
+                    return;
+                }
+
+                elementor.reloadPreview();
+
+                elementor.once('preview:loaded', function() {
+                    if (typeof $e.route === 'function') {
+                        $e.route('panel/page-settings/settings');
+                    }
+                });
+            }).catch(function(error) {
+                console.error('Failed to save the Loop Item before refreshing its preview', error);
+            });
         },
     };
 

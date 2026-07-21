@@ -4,7 +4,7 @@ Tags: elementor, loop grid, repeater fields, acf repeater, dynamic tags
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.4.1
+Stable tag: 2.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,11 +24,11 @@ Please ensure you have these plugins installed and activated before using Dynami
 
 = Compatibility boundary =
 
-Version 2.4.1 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
+Version 2.4.4 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
 
 Automatic context resolves Elementor's configured preview post, queried term or author objects, the current post, and the ACF Options page fallback. Free users can also select Current Post, Queried Object, or Options directly. Pro adds Current User and explicit post, user, taxonomy-term, or Options object IDs.
 
-The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.4.1 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
+The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.4.4 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
 
 == Description ==
 
@@ -123,6 +123,31 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 
 == Changelog ==
+
+= 2.4.4 =
+
+* Loop Item autosave preview
+  - Fixed Repeater dynamic tags rendering empty values when the selected Preview Post existed only in the current editor user's Elementor autosave.
+  - Resolved the active Loop Item through Elementor's autosave-aware document API while preserving the published-document fallback.
+* Compatibility
+  - The override remains limited to authenticated Elementor AJAX requests for this plugin's Repeater tags; frontend rendering and unrelated dynamic tags are unchanged.
+
+= 2.4.3 =
+
+* Loop Item editor preview
+  - Fixed Repeater dynamic tags rendering empty values when Elementor's editor-side tag request used the Loop Item template instead of its selected preview post.
+  - Persisted explicit ACF row-schema changes before reloading the editor preview, including changes restored to the control default.
+  - Invalidated stale dynamic-tag preview cache entries after a schema change without altering non-Repeater dynamic-tag settings.
+* Compatibility
+  - Frontend Loop Grid and Loop Carousel rendering is unchanged, no saved settings are renamed or removed, and no migrations run.
+
+= 2.4.2 =
+
+* Multiple same-object Loop Grids
+  - Fixed trailing Repeater Loop Grids rendering empty dynamic values when Elementor normalized a negative virtual row ID to an existing positive Theme Document ID.
+  - Preserved each virtual row and the surrounding WordPress query through Elementor's Loop Item preview lifecycle without leaking row context into later grids.
+* Compatibility
+  - No saved Elementor settings are renamed or removed, and no migrations run.
 
 = 2.4.1 =
 

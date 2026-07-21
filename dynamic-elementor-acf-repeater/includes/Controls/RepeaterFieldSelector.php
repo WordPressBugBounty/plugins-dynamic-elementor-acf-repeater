@@ -26,7 +26,7 @@ class RepeaterFieldSelector {
         }
         return self::$instance;
     }
-    
+
     public function register_controls($document) {
         if (!$document instanceof Loop || !$document::get_property('has_elements')) {
             return;
@@ -67,6 +67,34 @@ class RepeaterFieldSelector {
     public function get_saved_repeater_field($document_id) {
         $field = get_post_meta($document_id, 'earluna_loop_repeater_field', true);
         return $field;
+    }
+
+    /**
+     * Persist a validated Loop Item row schema selection.
+     *
+     * Elementor can omit a document setting from autosave when the selected value
+     * matches the control default. Persisting the editor's explicit selection here
+     * keeps the standalone schema metadata in sync before the preview is reloaded.
+     *
+     * @param int    $document_id  Elementor document ID.
+     * @param string $field_key    Selected repeater field or registered row schema.
+     * @return bool Whether the selection was valid and persisted.
+     */
+    public function persist_repeater_field($document_id, $field_key) {
+        $document_id = absint($document_id);
+        $field_key = sanitize_text_field($field_key);
+
+        if (!$document_id || '' === $field_key) {
+            return false;
+        }
+
+        $repeater_fields = $this->get_repeater_fields();
+        if (!array_key_exists($field_key, $repeater_fields)) {
+            return false;
+        }
+
+        update_post_meta($document_id, 'earluna_loop_repeater_field', $field_key);
+        return true;
     }
 
     private function get_repeater_fields() {

@@ -35,8 +35,8 @@ $features = array(
 	),
 	array(
 		'eyebrow'  => __( 'Open details', 'dynamic-elementor-acf-repeater' ),
-		'title'    => __( 'Turn the Loop Item into a lightbox', 'dynamic-elementor-acf-repeater' ),
-		'copy'     => __( 'Open the exact Loop Item over the page, then choose only the overlay, close, navigation, sizing, and visibility controls you want.', 'dynamic-elementor-acf-repeater' ),
+		'title'    => __( 'Open repeater rows in a lightbox', 'dynamic-elementor-acf-repeater' ),
+		'copy'     => __( 'Reuse the same Loop Item design for the selected repeater row, then choose only the overlay, close, navigation, sizing, and visibility controls you want.', 'dynamic-elementor-acf-repeater' ),
 		'location' => __( 'Loop Grid or Loop Carousel → Content → Repeater Lightbox', 'dynamic-elementor-acf-repeater' ),
 		'badge'    => __( 'Opt in', 'dynamic-elementor-acf-repeater' ),
 		'class'    => 'violet',

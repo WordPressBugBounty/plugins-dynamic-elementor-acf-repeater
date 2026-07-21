@@ -131,6 +131,11 @@ class RestHandler {
                 $post_id,
                 $this->mastermind->is_edit_mode( $post_id )
             );
+            if ( !$this->settings->persist_repeater_field( $post_id, $selected_repeater ) ) {
+                return new WP_Error('invalid_repeater_field', __( 'The selected row schema is not available.', 'dynamic-elementor-acf-repeater' ), array(
+                    'status' => 400,
+                ));
+            }
             $updated_tags = $this->mastermind->get_updated_dynamic_tag_controls(
                 $post_id,
                 $selected_repeater,

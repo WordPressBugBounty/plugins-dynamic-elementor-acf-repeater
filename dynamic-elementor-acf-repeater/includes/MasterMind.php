@@ -11,6 +11,7 @@ use DynamicElementorAcfRepeater\LoopGrid\LoopGridProvider;
 use DynamicElementorAcfRepeater\Data\RestHandler;
 use DynamicElementorAcfRepeater\DynamicTags\RepeaterTagManager;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
+use DynamicElementorAcfRepeater\Support\VirtualRowRenderGuard;
 class MasterMind {
     private static $_instance = null;
 
@@ -27,6 +28,8 @@ class MasterMind {
     private static $is_initialized = false;
 
     private $repeater_provider = null;
+
+    private $virtual_row_render_guard = null;
 
     private $rest;
 
@@ -52,6 +55,8 @@ class MasterMind {
             return;
         }
         $this->repeater_provider = LoopGridProvider::instance();
+        $this->virtual_row_render_guard = new VirtualRowRenderGuard();
+        $this->virtual_row_render_guard->register();
         $this->register_hooks();
         add_filter(
             'the_posts',
@@ -72,6 +77,7 @@ class MasterMind {
     private function load_elementor_dependencies() {
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Support/RenderContextToken.php';
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Support/VirtualRowContext.php';
+        require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Support/VirtualRowRenderGuard.php';
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Support/ContextResolver.php';
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Support/ContextInspector.php';
         require_once DYNAMIC_ELEMENTOR_ACF_REPEATER_PLUGIN_PATH . 'includes/Support/DynamicValueFormatter.php';
