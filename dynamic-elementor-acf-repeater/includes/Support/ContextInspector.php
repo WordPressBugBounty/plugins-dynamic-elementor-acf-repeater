@@ -372,8 +372,8 @@ final class ContextInspector {
 
 		$native_filter = ! empty( $settings['earluna_enable_elementor_filter'] ) && 'yes' === $settings['earluna_enable_elementor_filter'];
 		$custom_filter = ! empty( $settings['earluna_enable_custom_filter'] ) && 'yes' === $settings['earluna_enable_custom_filter'];
-		/* translators: 1: Elementor native filter state, 2: plugin filter state. */
-		$filter_value = sprintf( __( 'Elementor native: %1$s · plugin filter: %2$s', 'dynamic-elementor-acf-repeater' ), $this->on_off( $native_filter ), $this->on_off( $custom_filter ) );
+		/* translators: 1: Elementor Pro Taxonomy Filter state, 2: plugin filter state. */
+		$filter_value = sprintf( __( 'Elementor Pro Taxonomy Filter: %1$s · plugin filter: %2$s', 'dynamic-elementor-acf-repeater' ), $this->on_off( $native_filter ), $this->on_off( $custom_filter ) );
 		$items[]      = $this->item( __( 'Filtering', 'dynamic-elementor-acf-repeater' ), $filter_value, $native_filter || $custom_filter ? 'ok' : 'muted' );
 
 		$items[] = $this->item( __( 'Pagination', 'dynamic-elementor-acf-repeater' ), $this->format_pagination( $settings ), 'muted' );

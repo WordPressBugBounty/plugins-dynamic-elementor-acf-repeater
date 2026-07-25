@@ -66,7 +66,7 @@ final class DynamicValueFormatter {
 
 		if ( is_scalar( $value ) ) {
 			$value = (string) $value;
-			return wp_http_validate_url( $value ) ? esc_url_raw( $value ) : '';
+			return esc_url_raw( $value );
 		}
 
 		return '';
