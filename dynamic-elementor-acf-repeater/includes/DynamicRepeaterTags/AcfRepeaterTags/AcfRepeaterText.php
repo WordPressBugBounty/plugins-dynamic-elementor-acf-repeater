@@ -60,6 +60,18 @@ class AcfRepeaterText extends AcfRepeaterTagBase {
 	 * Register text-only output controls while preserving the plain Data_Tag contract.
 	 */
 	protected function register_advanced_section() {
+		$this->register_text_output_controls();
+	}
+
+	/**
+	 * Register text-only output controls from either Elementor's normal control
+	 * lifecycle or the plugin's prebuilt dynamic-tag control stack.
+	 */
+	public function register_text_output_controls() {
+		if ( $this->get_controls( 'before' ) ) {
+			return;
+		}
+
 		$this->start_controls_section(
 			'advanced',
 			array(

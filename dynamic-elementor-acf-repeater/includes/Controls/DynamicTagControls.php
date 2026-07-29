@@ -113,6 +113,13 @@ class DynamicTagControls {
             );
 
             $tag->end_controls_section();
+
+			// Opening the control stack above means Elementor will not initialize
+			// the tag's advanced section later. Let text tags append their scalar
+			// output controls to this same prebuilt stack.
+			if ( method_exists( $tag, 'register_text_output_controls' ) ) {
+				$tag->register_text_output_controls();
+			}
         } catch (\Exception $e) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 // For admin users only

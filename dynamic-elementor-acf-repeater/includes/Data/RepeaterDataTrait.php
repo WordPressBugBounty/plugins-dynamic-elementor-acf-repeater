@@ -115,6 +115,9 @@ trait RepeaterDataTrait {
 			$registry = \DynamicElementorAcfRepeater\LoopGrid\RowSourceRegistry::instance();
 			if ( $registry->get_schema( $repeater_field ) ) {
 				$preview_rows = $registry->resolve_schema_rows( $repeater_field, $post_id );
+				if ( empty( $preview_rows ) && 'options' !== $post_id ) {
+					$preview_rows = $registry->resolve_schema_rows( $repeater_field, 'options' );
+				}
 				if ( empty( $preview_rows ) ) {
 					return null;
 				}
