@@ -56,32 +56,95 @@ class AcfRepeaterText extends AcfRepeaterTagBase {
 		return $categories;
 	}
 
+	/**
+	 * Register text-only output controls while preserving the plain Data_Tag contract.
+	 */
+	protected function register_advanced_section() {
+		$this->start_controls_section(
+			'advanced',
+			array(
+				'label' => esc_html__( 'Advanced', 'elementor' ),
+			)
+		);
+
+		$this->add_control(
+			'before',
+			array(
+				'label'   => esc_html__( 'Before', 'elementor' ),
+				'type'    => \Elementor\Controls_Manager::TEXT,
+				'default' => '',
+				'ai'      => array(
+					'active' => false,
+				),
+			)
+		);
+
+		$this->add_control(
+			'after',
+			array(
+				'label'   => esc_html__( 'After', 'elementor' ),
+				'type'    => \Elementor\Controls_Manager::TEXT,
+				'default' => '',
+				'ai'      => array(
+					'active' => false,
+				),
+			)
+		);
+
+		$this->add_control(
+			'fallback',
+			array(
+				'label'   => esc_html__( 'Fallback', 'elementor' ),
+				'type'    => \Elementor\Controls_Manager::TEXT,
+				'default' => '',
+				'ai'      => array(
+					'active' => false,
+				),
+			)
+		);
+
+		$this->end_controls_section();
+	}
+
 	public function get_value( array $options = array() ) {
 		$field_key = $this->get_settings( 'repeater_field' );
 
 		if ( empty( $field_key ) ) {
-			return '';
+			return $this->get_fallback();
 		}
 
 		$value = $this->get_repeater_value( $field_key );
 
 		if ( $value === null ) {
-			return '';
+			return $this->get_fallback();
 		}
 
 		$field_type = $this->get_field_type( $field_key );
 
 		if ( $field_type === null ) {
-			return '';
+			return $this->get_fallback();
 		}
 
 		if ( ! earluna_can_use_premium_code() ) {
 			if ( ! in_array( $field_type, array( 'text', 'textarea' ), true ) ) {
-				return '';
+				return $this->get_fallback();
 			}
 		}
 
-		return DynamicValueFormatter::text( $value );
+		$value = DynamicValueFormatter::text( $value );
+
+		if ( '' === $value ) {
+			return $this->get_fallback();
+		}
+
+		$before = wp_kses_post( (string) $this->get_settings( 'before' ) );
+		$after  = wp_kses_post( (string) $this->get_settings( 'after' ) );
+
+		return $before . $value . $after;
+	}
+
+	private function get_fallback() {
+		return wp_kses_post( (string) $this->get_settings( 'fallback' ) );
 	}
 
 	private function get_field_type( $field_key ) {
