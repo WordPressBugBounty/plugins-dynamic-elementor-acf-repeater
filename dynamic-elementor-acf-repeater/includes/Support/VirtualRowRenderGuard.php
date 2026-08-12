@@ -89,7 +89,24 @@ class VirtualRowRenderGuard {
 
 		global $post, $wp_query;
 
-		$db                   = $this->get_elementor_db();
+		$current_context = VirtualRowContext::from_post( $post );
+		$current_id      = is_object( $post ) && isset( $post->ID ) ? (int) $post->ID : 0;
+		$virtual_id      = isset( $active['post']->ID ) ? (int) $active['post']->ID : 0;
+		$is_collision    = ! $current_context && $virtual_id < 0 && $current_id === abs( $virtual_id );
+		$db              = $this->get_elementor_db();
+
+		// A real-post Loop Grid may be nested inside the mapped template for the
+		// active Repeater/Flexible row. Its Loop Item must retain that real post
+		// context. Theme_Document::after_get_content() still restores one query
+		// frame, so balance that restore with a no-op frame before returning.
+		if ( ! $current_context && ! $is_collision ) {
+			if ( $db && method_exists( $db, 'switch_to_query' ) && is_object( $wp_query ) && isset( $wp_query->query ) && is_array( $wp_query->query ) ) {
+				$db->switch_to_query( $wp_query->query, true );
+			}
+
+			return;
+		}
+
 		$outer_global_query   = isset( $active['global_query'] ) && is_object( $active['global_query'] ) ? $active['global_query'] : null;
 		$preview_was_switched = $outer_global_query && $wp_query !== $outer_global_query;
 
