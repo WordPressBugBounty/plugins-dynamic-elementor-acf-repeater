@@ -7,6 +7,7 @@ use DynamicElementorAcfRepeater\Controls\ContextInspectorControls;
 use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Support\ContextResolver;
 use DynamicElementorAcfRepeater\Support\VirtualRowContext;
+use DynamicElementorAcfRepeater\Support\VirtualRowRenderGuard;
 
 class LoopGridProvider {
 	protected static $instance = null;
@@ -14,6 +15,7 @@ class LoopGridProvider {
 	protected $controls;
 	protected $context_resolver;
 	protected $context_inspector;
+	protected $render_guard = null;
 
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -37,6 +39,15 @@ class LoopGridProvider {
 
 		// Add filter for virtual post classes
 		add_filter( 'post_class', array( $this, 'add_virtual_post_classes' ), 10, 3 );
+	}
+
+	/**
+	 * Attach the render guard that tracks virtual rows while Elementor renders.
+	 *
+	 * @param VirtualRowRenderGuard $render_guard Request-local render guard.
+	 */
+	public function set_render_guard( VirtualRowRenderGuard $render_guard ) {
+		$this->render_guard = $render_guard;
 	}
 
 	protected function init_controls() {
@@ -76,6 +87,7 @@ class LoopGridProvider {
 			}
 
 			if ( empty( $repeater_data ) ) {
+				$this->mark_query_empty( $query );
 				return array();
 			}
 
@@ -287,6 +299,27 @@ class LoopGridProvider {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Report a plugin-owned direct query that produced no rows as empty.
+	 *
+	 * WordPress counted the source object before the rows were expanded, so
+	 * Elementor would otherwise render an empty loop container instead of its
+	 * configured Nothing Found message.
+	 *
+	 * @param object $query Plugin-owned source query.
+	 */
+	private function mark_query_empty( $query ) {
+		if ( ! is_object( $query ) ) {
+			return;
+		}
+		if ( property_exists( $query, 'found_posts' ) ) {
+			$query->found_posts = 0;
+		}
+		if ( property_exists( $query, 'max_num_pages' ) ) {
+			$query->max_num_pages = 0;
+		}
 	}
 
 	/**

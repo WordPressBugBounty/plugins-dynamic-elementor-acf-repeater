@@ -13,6 +13,7 @@ class RepeaterFieldSelector {
     private static $instance = null;
     private $mastermind;
     const SETTINGS_KEY = 'RepeaterFieldSelector';
+	const NESTED_WIDGETS_SETTING = 'earluna_loop_allow_nested_widgets';
 
     private function __construct() {
         $this->mastermind = MasterMind::instance();
@@ -53,6 +54,23 @@ class RepeaterFieldSelector {
 				'description' => earluna_can_use_premium_code() ? __('Select the Repeater row or Flexible Content layout represented by this Loop template.', 'dynamic-elementor-acf-repeater') : __('Select an ACF repeater field to use in this loop template.', 'dynamic-elementor-acf-repeater'),
             ]
         );
+
+		// Elementor Pro hides Loop Grid and Loop Carousel from the widget panel of a
+		// Loop Item. Nested row loops need them there, so this opt-in setting lets
+		// the editor script re-enable both widgets for this template only. The
+		// value lives in the document's page settings like any Elementor control.
+		$document->add_control(
+			self::NESTED_WIDGETS_SETTING,
+			[
+				'label'        => __('Allow nested Loop widgets', 'dynamic-elementor-acf-repeater'),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => __('Yes', 'dynamic-elementor-acf-repeater'),
+				'label_off'    => __('No', 'dynamic-elementor-acf-repeater'),
+				'return_value' => 'yes',
+				'default'      => '',
+				'description'  => __('Elementor hides Loop Grid and Loop Carousel inside Loop Items. Turn this on to add a Loop widget to this template, for example a nested Repeater loop that shows only the current row\'s rows.', 'dynamic-elementor-acf-repeater'),
+			]
+		);
 
         $document->end_controls_section();
     }

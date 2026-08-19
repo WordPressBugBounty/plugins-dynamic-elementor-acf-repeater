@@ -57,6 +57,7 @@ class MasterMind {
         $this->repeater_provider = LoopGridProvider::instance();
         $this->virtual_row_render_guard = new VirtualRowRenderGuard();
         $this->virtual_row_render_guard->register();
+        $this->repeater_provider->set_render_guard( $this->virtual_row_render_guard );
         $this->register_hooks();
         add_filter(
             'the_posts',

@@ -52,7 +52,7 @@ $features = array(
 	array(
 		'eyebrow'  => __( 'Model deeply', 'dynamic-elementor-acf-repeater' ),
 		'title'    => __( 'Groups, Flexible Content, and nested Repeaters', 'dynamic-elementor-acf-repeater' ),
-		'copy'     => __( 'Select stable field-key paths, map layouts to different Loop Items, and flatten nested rows without moving content into a replacement widget.', 'dynamic-elementor-acf-repeater' ),
+		'copy'     => __( 'Select stable field-key paths, map layouts to different Loop Items, and render nested rows either flattened or scoped to their parent row inside a Loop Item.', 'dynamic-elementor-acf-repeater' ),
 		'location' => __( 'Loop Item Page Settings → ACF Row Schema; Loop widget → ACF Row Source', 'dynamic-elementor-acf-repeater' ),
 		'badge'    => __( 'Pro', 'dynamic-elementor-acf-repeater' ),
 		'class'    => 'amber',

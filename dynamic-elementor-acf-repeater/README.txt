@@ -4,7 +4,7 @@ Tags: elementor, loop grid, repeater fields, acf repeater, dynamic tags
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.4.9
+Stable tag: 2.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,11 +24,11 @@ Please ensure you have these plugins installed and activated before using Dynami
 
 = Compatibility boundary =
 
-Version 2.4.9 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
+Version 2.5.0 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
 
 Automatic context resolves Elementor's configured preview post, queried term or author objects, the current post, and the ACF Options page fallback. Free users can also select Current Post, Queried Object, or Options directly. Pro adds Current User and explicit post, user, taxonomy-term, or Options object IDs.
 
-The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.4.9 was validated with Secure Custom Fields 6.9.1. Premium source and premium REST routes are excluded from the free package.
+The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.5.0 was validated with Secure Custom Fields 6.9.5. Premium source and premium REST routes are excluded from the free package.
 
 == Description ==
 
@@ -83,6 +83,8 @@ The Pro version includes everything in the free version, plus a host of advanced
 * Loop Carousel support
 * Current-user and explicit ACF object context selection
 * True nested Repeater row sources through Repeater, Flexible Content, and Group field paths
+* Row-scoped nested Repeater loops: a Loop Grid or Loop Carousel inside a Repeater or Flexible Content Loop Item renders only the current row's nested rows
+* Allow nested Loop widgets: an opt-in Loop Item setting that puts Elementor's Loop Grid and Loop Carousel back in that template's widget panel
 * Flexible Content layout-to-Loop-template mapping for Loop Grid and Loop Carousel
 * Per-layout row schemas and representative values while editing mapped Loop Item templates
 * Opt-in row search across selected scalar fields, with tokenized matching before pagination
@@ -113,6 +115,10 @@ The free tags support text/textarea, image, URL-compatible values, and original 
 
 In each Loop Item's Page Settings, choose the ACF Row Schema that the template represents. In the Loop Grid or Loop Carousel, enable ACF Rows, select the Flexible Content row source, choose the ACF Flexible Content template type, and assign a Loop Item to each discovered layout. Unmapped layouts use the normal Loop template unless Skip Row is selected.
 
+= Can a Repeater row render its own nested Repeater rows? =
+
+Yes, in Pro. Build the outer Loop Grid or Loop Carousel over the parent Repeater or Flexible Content source. In the parent row's Loop Item, open Page Settings › ACF Repeater Loop Settings and turn on Allow nested Loop widgets (Elementor hides Loop Grid and Loop Carousel inside Loop Items by default), then add a Loop Grid or Loop Carousel and select the nested Repeater row source (for example [Nested Repeater] Athlete Rows › Athletes). Each rendered parent row shows only its own nested rows, in ACF order, and a parent row without nested rows renders an empty inner loop. The same nested source rendered outside a parent row keeps its flattened, whole-object behavior. Editing the parent Loop Item on its own previews the nested rows of the same representative row that its Repeater dynamic tags preview.
+
 = Can a mapped Flexible Content row render its own Relationship posts? =
 
 Yes, in Pro. Add a Loop Grid or Loop Carousel inside the mapped Loop Item, enable ACF Rows and Query Relationship Posts, then select the Relationship/Post Object field path under that Flexible Content layout. Each repeated layout row uses only its own selected posts, preserves their configured order, and returns an empty result when that row has no selections. Outside an active row, the same field-path query keeps its aggregate source-object behavior.
@@ -130,6 +136,31 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 
 == Changelog ==
+
+= 2.5.0 =
+
+* Row-scoped nested Repeater loops
+  - Scoped a nested Repeater row source rendered by a Loop Grid or Loop Carousel inside a Repeater or Flexible Content Loop Item to the parent row that owns those nested rows.
+  - Preserved ACF row order and the complete row index path for every scoped row so deeper nesting, row-value tags, and row-scoped Relationship queries keep working inside the inner loop.
+  - Kept a parent row without nested rows authoritative so its inner loop renders empty instead of showing another row's children.
+  - Matched parent rows produced by the classic top-level Repeater source (including Repeaters inside Groups) as well as registry-based nested and Flexible Content sources.
+* Loop Item editing
+  - Added the opt-in Allow nested Loop widgets setting to a Loop Item's ACF Repeater Loop Settings; it puts Elementor's Loop Grid and Loop Carousel back in that template's widget panel immediately, and only for that template.
+  - Previewed the nested rows of the representative parent row when a Loop Item that contains a nested Loop widget is edited on its own, matching the row its Repeater dynamic tags preview.
+* Row-scoped Relationship queries
+  - Extended active-row scoping to parent rows produced by the classic top-level Repeater source, so a Relationship Loop Grid inside a Repeater Loop Item now follows its own row instead of aggregating every row.
+* Nested Elementor loops
+  - Fixed one virtual row per request rendering as the site's front page (or another template preview post) when Elementor's preview manager resolved the row's virtual ID to a Theme Builder template with a configured preview. Every such switch is now unwound, not only a switch that landed on the same post number.
+  - Rebound the outer Loop Grid or Loop Carousel to Elementor's shared skin after a nested Loop widget of the same type renders, so later outer rows keep their own Loop Item and settings instead of the inner widget's.
+  - Rendered a Loop widget empty when its Loop Item is already rendering one of that widget's own rows, preventing self-referencing Loop Items from recursing without end.
+  - Reported a current-object query without rows as empty so Elementor's Nothing Found message renders instead of an empty loop container.
+* Compatibility
+  - A nested source rendered outside a matching parent row, at the same depth as the parent row, or from another ACF object keeps its flattened whole-object behavior.
+  - The inner loop must resolve the same ACF object as the outer loop; Automatic context does this on the object that owns the fields, and explicit contexts must match.
+  - No saved Elementor settings are renamed or migrated, and no custom PHP is required for the nested row workflow.
+* Validation
+  - Added unit coverage for row-scoped nested sources, classic and group-prefixed parent paths, layout isolation, empty parent rows, standalone Loop Item preview rows, shared-skin rebinding, and the self-referencing render guard.
+  - Added a marked LocalWP fixture with three parent rows of two, one, and zero nested rows plus real WordPress frontend, Loop Item editor, desktop, and mobile browser coverage.
 
 = 2.4.9 =
 

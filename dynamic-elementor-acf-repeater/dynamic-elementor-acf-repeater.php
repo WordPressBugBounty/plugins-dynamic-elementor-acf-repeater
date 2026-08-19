@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Dynamic ACF Repeater for Elementor
  * Description: Renders ACF or Secure Custom Fields repeater values in Elementor Loop Grids via Dynamic Tags.
- * Version: 2.4.9
+ * Version: 2.5.0
  * Author:      WP Luna
  * Author URI:  https://wpluna.com
  * License:     GPL-2.0+
@@ -26,7 +26,7 @@ use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Controls\LightboxRepeaterVisibilityControl;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
 use DynamicElementorAcfRepeater\AdminSettingsNotices;
-define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '2.4.9' );
+define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '2.5.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_PRO_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_PHP_VERSION', '7.4' );
@@ -362,6 +362,13 @@ class Dynamic_Elementor_ACF_Repeater {
         wp_enqueue_script(
             'ear-tag-change-detector',
             plugins_url( 'assets/js/tag-change-detector.js', __FILE__ ),
+            array('jquery', 'elementor-editor'),
+            DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION,
+            true
+        );
+        wp_enqueue_script(
+            'ear-loop-item-nested-widgets',
+            plugins_url( 'assets/js/loop-item-nested-widgets.js', __FILE__ ),
             array('jquery', 'elementor-editor'),
             DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION,
             true
