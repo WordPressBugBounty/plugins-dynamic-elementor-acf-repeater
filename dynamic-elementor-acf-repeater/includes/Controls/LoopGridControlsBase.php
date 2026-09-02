@@ -133,6 +133,42 @@ class LoopGridControlsBase {
     }   
 
     /**
+     * Free build: show the Accordion Rows section with the Pro switch disabled.
+     */
+    public function register_accordion_section($element, $args) {
+        if ($element->get_controls('section_earluna_accordion')) {
+            return;
+        }
+
+        $element->start_controls_section(
+            'section_earluna_accordion',
+            [
+                'label' => __('Accordion Rows', 'dynamic-elementor-acf-repeater'),
+                'tab' => Controls_Manager::TAB_CONTENT,
+                'condition' => [
+                    'use_acf_repeater' => 'yes',
+                ],
+            ]
+        );
+
+        $element->add_control(
+            'earluna_accordion_group',
+            [
+                'label' => __('Treat rows as one accordion', 'dynamic-elementor-acf-repeater'),
+                'type' => 'earluna_switcher',
+                'description' => earluna_get_upgrade_notice(__('Treating the Accordion in every row as one accordion (unique IDs, one open item, arrow-key navigation, one FAQ schema) is', 'dynamic-elementor-acf-repeater')),
+                'classes' => 'elementor-control-disabled',
+                'return_value' => 'no',
+                'default' => 'no',
+                'label_off' => __('On', 'dynamic-elementor-acf-repeater'),
+                'label_on' => __('Off', 'dynamic-elementor-acf-repeater'),
+            ]
+        );
+
+        $element->end_controls_section();
+    }
+
+    /**
      * Find first loop grid using a repeater field (excluding current one)
      * Uses reference to set $found flag when a match is found
      */

@@ -60,6 +60,7 @@ class LoopGridProvider {
 		if ( ! earluna_can_use_premium_code() ) {
 			add_action( 'elementor/element/loop-grid/section_query/after_section_start', array( $this->controls, 'register_query_controls' ), 10, 2 );
 			add_action( 'elementor/element/loop-grid/section_query/after_section_end', array( $this->controls, 'register_lightbox_section' ), 10, 2 );
+			add_action( 'elementor/element/loop-grid/section_query/after_section_end', array( $this->controls, 'register_accordion_section' ), 13, 2 );
 		}
 	}
 

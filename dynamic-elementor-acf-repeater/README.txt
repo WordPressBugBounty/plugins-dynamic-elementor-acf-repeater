@@ -4,7 +4,7 @@ Tags: elementor, loop grid, repeater fields, acf repeater, dynamic tags
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.5.0
+Stable tag: 2.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,11 +24,11 @@ Please ensure you have these plugins installed and activated before using Dynami
 
 = Compatibility boundary =
 
-Version 2.5.0 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
+Version 2.6.0 is verified with classic Elementor Loop Grid and Loop Carousel widgets. Atomic Elements inside Loop Grids remain an upstream Elementor limitation and are not claimed as supported.
 
 Automatic context resolves Elementor's configured preview post, queried term or author objects, the current post, and the ACF Options page fallback. Free users can also select Current Post, Queried Object, or Options directly. Pro adds Current User and explicit post, user, taxonomy-term, or Options object IDs.
 
-The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.5.0 was validated with Secure Custom Fields 6.9.5. Premium source and premium REST routes are excluded from the free package.
+The free package boots safely without premium field types, but a compatible Repeater field provider is required before row fields can be created or rendered. Version 2.6.0 was validated with Elementor 4.2.3, Elementor Pro 4.2.2, and Secure Custom Fields 6.9.5. Premium source and premium REST routes are excluded from the free package.
 
 == Description ==
 
@@ -85,6 +85,7 @@ The Pro version includes everything in the free version, plus a host of advanced
 * True nested Repeater row sources through Repeater, Flexible Content, and Group field paths
 * Row-scoped nested Repeater loops: a Loop Grid or Loop Carousel inside a Repeater or Flexible Content Loop Item renders only the current row's nested rows
 * Allow nested Loop widgets: an opt-in Loop Item setting that puts Elementor's Loop Grid and Loop Carousel back in that template's widget panel
+* Treat rows as one accordion: a Loop Grid whose Loop Item is built around Elementor's Accordion widget renders its Repeater or Flexible Content rows as one accordion, with row-unique item IDs, a single open item, arrow-key navigation across rows, and one FAQ schema block
 * Flexible Content layout-to-Loop-template mapping for Loop Grid and Loop Carousel
 * Per-layout row schemas and representative values while editing mapped Loop Item templates
 * Opt-in row search across selected scalar fields, with tokenized matching before pagination
@@ -119,6 +120,10 @@ In each Loop Item's Page Settings, choose the ACF Row Schema that the template r
 
 Yes, in Pro. Build the outer Loop Grid or Loop Carousel over the parent Repeater or Flexible Content source. In the parent row's Loop Item, open Page Settings › ACF Repeater Loop Settings and turn on Allow nested Loop widgets (Elementor hides Loop Grid and Loop Carousel inside Loop Items by default), then add a Loop Grid or Loop Carousel and select the nested Repeater row source (for example [Nested Repeater] Athlete Rows › Athletes). Each rendered parent row shows only its own nested rows, in ACF order, and a parent row without nested rows renders an empty inner loop. The same nested source rendered outside a parent row keeps its flattened, whole-object behavior. Editing the parent Loop Item on its own previews the nested rows of the same representative row that its Repeater dynamic tags preview.
 
+= Can Repeater or Flexible Content rows render as one Accordion? =
+
+Yes, in Pro. Build a Loop Item around Elementor's Accordion widget with a single item: bind the item title to an ACF Repeater Text tag, and place a Text Editor bound to another ACF Repeater Text tag inside the item's content container. In the Loop Grid, enable ACF Rows, select the Repeater or Flexible Content row source, then open Accordion Rows and turn on Treat rows as one accordion. Each row still renders its own Accordion widget, but the list behaves as one: every item ID is unique to its row, only the first item starts open, opening an item closes the open item in any other row (when the widget allows one open item), arrow keys, Home, and End move through every row, and the widget's FAQ schema is printed once for all rows on the page. With Flexible Content, only the layouts mapped to an accordion Loop Item take part; other layouts render normally in between. Use a one-column layout.
+
 = Can a mapped Flexible Content row render its own Relationship posts? =
 
 Yes, in Pro. Add a Loop Grid or Loop Carousel inside the mapped Loop Item, enable ACF Rows and Query Relationship Posts, then select the Relationship/Post Object field path under that Flexible Content layout. Each repeated layout row uses only its own selected posts, preserves their configured order, and returns an empty result when that row has no selections. Outside an active row, the same field-path query keeps its aggregate source-object behavior.
@@ -136,6 +141,25 @@ Yes, you can find the [usage guide here](https://calculabs.github.io/elementor-a
 
 
 == Changelog ==
+
+= 2.6.0 =
+
+* Accordion rows as one accordion (Pro)
+  - Added Treat rows as one accordion to a Loop Grid's new Accordion Rows section (shown when ACF Rows is on, default off). Each row's Elementor Accordion widget keeps rendering on its own, and the plugin links the rows as they render.
+  - Made every generated accordion item ID unique to its row, together with the aria-controls and aria-labelledby pairs that reference it; custom CSS IDs on items are left as authored.
+  - Kept the widget's default state only for the list's first accordion, so First expanded opens one item for the whole list and the list has one tab stop.
+  - Removed the per-row FAQ schema blocks and printed one FAQPage block for all rows after the Loop Grid; background renders (editor previews, AJAX and REST refreshes) rewrite rows but print no schema.
+  - Added a frontend script that closes the open item in other rows when an item opens (unless the widget allows multiple), moves focus through every row with the arrow keys, Home, and End, keeps a single roving tab stop, and folds rows added by Load More or filters into the list closed.
+  - Supported Flexible Content row sources: only layouts mapped to an accordion Loop Item take part, the first accordion row starts open even when another layout precedes it, and every row keeps its own layout template.
+  - Kept a Loop Grid nested inside a grouped row as its own list, and gave an accordion nested inside a row's accordion item unique IDs without changing its state.
+  - Showed the switch disabled with an upgrade notice in the free build. The mode is offered on Loop Grid only.
+* ACF Repeater Text tag
+  - Listed Post Object and Relationship sub-fields in the tag's Repeater Field dropdown. A post value resolves to its title, so one Post Object sub-field can drive a linked title with the Text tag and its permalink with the Url tag. A sub-field returning Post ID still renders the numeric ID; prefer the Post Object return format.
+* Compatibility
+  - Verified with Elementor 4.2.3, Elementor Pro 4.2.2, and Secure Custom Fields 6.9.5. The legacy Accordion widget (hidden from the panel since Elementor 3.15) has no dynamic content field and is not part of this mode.
+* Validation
+  - Added unit coverage for ID and aria rewriting, custom IDs, collapse and tab-stop handling, schema extraction and aggregation, Flexible Content rows without an accordion, nested rows and multi-source rows, nested loops, nested accordions, background renders, and untouched grids.
+  - Added Playwright coverage for cross-row closing, Enter and Space activation, multiple-open widgets, keyboard navigation, nested loops, appended and replaced rows, and unmarked containers, plus a marked LocalWP fixture with a grouped Repeater grid, a grouped Flexible Content grid mixing FAQ and Note layouts, and an ungrouped control grid.
 
 = 2.5.0 =
 

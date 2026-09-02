@@ -45,6 +45,8 @@ class AcfRepeaterText extends AcfRepeaterTagBase {
 			'time_picker',
 			'date_time_picker',
 			'color_picker',
+			'post_object',
+			'relationship',
 		);
 	}
 

@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Dynamic ACF Repeater for Elementor
  * Description: Renders ACF or Secure Custom Fields repeater values in Elementor Loop Grids via Dynamic Tags.
- * Version: 2.5.0
+ * Version: 2.6.0
  * Author:      WP Luna
  * Author URI:  https://wpluna.com
  * License:     GPL-2.0+
@@ -12,10 +12,10 @@
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Requires Plugins: elementor
- * Elementor tested up to: 4.1.5
- * Elementor Pro tested up to: 4.1.3
+ * Elementor tested up to: 4.2.3
+ * Elementor Pro tested up to: 4.2.2
  * ACF PRO tested up to: 6.3.12
- * Secure Custom Fields tested up to: 6.9.1
+ * Secure Custom Fields tested up to: 6.9.5
  *
  */
 if ( !defined( 'ABSPATH' ) ) {
@@ -26,7 +26,7 @@ use DynamicElementorAcfRepeater\MasterMind;
 use DynamicElementorAcfRepeater\Controls\LightboxRepeaterVisibilityControl;
 use DynamicElementorAcfRepeater\Controls\RepeaterFieldSelector;
 use DynamicElementorAcfRepeater\AdminSettingsNotices;
-define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '2.5.0' );
+define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION', '2.6.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_ELEMENTOR_PRO_VERSION', '3.8.0' );
 define( 'DYNAMIC_ELEMENTOR_ACF_REPEATER_MINIMUM_PHP_VERSION', '7.4' );
@@ -346,6 +346,13 @@ class Dynamic_Elementor_ACF_Repeater {
                 DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION,
                 true
             );
+            wp_register_script(
+                'ear-accordion-group',
+                plugins_url( 'assets/js/pro/accordion-group.js', __FILE__ ),
+                array('jquery'),
+                DYNAMIC_ELEMENTOR_ACF_REPEATER_VERSION,
+                true
+            );
         }
     }
 
@@ -389,6 +396,7 @@ class Dynamic_Elementor_ACF_Repeater {
         }
         $this->enqueue_lightbox_assets();
         $this->enqueue_filter_assets();
+        $this->enqueue_accordion_group_assets();
     }
 
     /**
@@ -408,6 +416,17 @@ class Dynamic_Elementor_ACF_Repeater {
             'restNonce'     => ( is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '' ),
             'requestFailed' => __( 'The filter could not be updated. Please try again.', 'dynamic-elementor-acf-repeater' ),
         ) );
+    }
+
+    /**
+     * Load the script that links a grouped Loop Grid's accordion rows.
+     */
+    public function enqueue_accordion_group_assets() {
+        if ( !earluna_can_use_premium_code() ) {
+            return;
+        }
+        $this->register_assets();
+        wp_enqueue_script( 'ear-accordion-group' );
     }
 
     public function enqueue_lightbox_assets() {
